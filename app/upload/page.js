@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { uploadAsset } from './upload_library'
 
 export default function UploadPage() {
@@ -10,7 +10,22 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('') // 'success' or 'error'
+  const [libraryId, setLibraryId] = useState('')
   const fileInputRef = useRef(null)
+
+  // Load library ID from localStorage on component mount
+  useEffect(() => {
+    const savedLibraryId = localStorage.getItem('lastLibraryId')
+    if (savedLibraryId) {
+      setLibraryId(savedLibraryId)
+    }
+  }, [])
+
+  // Clear library ID from localStorage
+  const clearLibraryId = () => {
+    localStorage.removeItem('lastLibraryId')
+    setLibraryId('')
+  }
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -43,7 +58,7 @@ export default function UploadPage() {
     e.preventDefault()
 
     if (!label || !file) {
-      setMessage('กรุณากรอก label และเลือกไฟล์')
+      setMessage('Please fill in label and select file')
       setMessageType('error')
       return
     }
@@ -61,6 +76,9 @@ export default function UploadPage() {
       if (result.success) {
         setMessage(result.message)
         setMessageType('success')
+        setLibraryId(result.data.id)
+        // Save to localStorage
+        localStorage.setItem('lastLibraryId', result.data.id)
         setLabel('')
         setFile(null)
       } else {
@@ -68,7 +86,7 @@ export default function UploadPage() {
         setMessageType('error')
       }
     } catch (error) {
-      setMessage('เกิดข้อผิดพลาดในการอัพโหลด')
+      setMessage('Error uploading file')
       setMessageType('error')
     } finally {
       setIsUploading(false)
@@ -79,30 +97,31 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          อัพโหลด Asset
+          Upload Asset
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Label Input */}
           <div>
-            <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="upload-label" className="block text-sm font-medium text-gray-700 mb-2">
               Label *
             </label>
             <input
               type="text"
-              id="label"
+              id="upload-label"
+              name="label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="กรอก label สำหรับ asset"
+              placeholder="Enter label for asset"
               disabled={isUploading}
             />
           </div>
 
           {/* File Upload Area */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ไฟล์ *
+            <label htmlFor="upload-file" className="block text-sm font-medium text-gray-700 mb-2">
+              File *
             </label>
 
             {/* Drag & Drop Area */}
@@ -129,10 +148,10 @@ export default function UploadPage() {
               ) : (
                 <div className="space-y-2">
                   <div className="text-gray-500">
-                    ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
+                    Drag file here or click to select file
                   </div>
                   <div className="text-sm text-gray-400">
-                    รองรับไฟล์ทุกประเภท
+                    Supports all file types
                   </div>
                 </div>
               )}
@@ -142,6 +161,8 @@ export default function UploadPage() {
             <input
               ref={fileInputRef}
               type="file"
+              id="upload-file"
+              name="file"
               onChange={handleFileSelect}
               className="hidden"
               disabled={isUploading}
@@ -154,7 +175,7 @@ export default function UploadPage() {
             disabled={isUploading || !label || !file}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isUploading ? 'กำลังอัพโหลด...' : 'อัพโหลด'}
+            {isUploading ? 'Uploading...' : 'Upload'}
           </button>
         </form>
 
@@ -166,6 +187,38 @@ export default function UploadPage() {
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}>
             {message}
+          </div>
+        )}
+
+        {/* Library ID Display */}
+        {libraryId && (
+          <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-medium text-blue-800">Last Upload</h3>
+              <button
+                onClick={clearLibraryId}
+                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-blue-700 mb-1">Library ID</label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  value={libraryId}
+                  readOnly
+                  className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={() => navigator.clipboard.writeText(libraryId)}
+                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

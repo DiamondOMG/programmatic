@@ -91,18 +91,18 @@ export default function UpdateSequencePage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Update Sequence
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Library ID */}
           <div>
-            <label htmlFor="libraryId" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="sequence-library-id" className="block text-sm font-medium text-gray-700 mb-2">
               Library ID *
             </label>
             <input
               type="text"
-              id="libraryId"
+              id="sequence-library-id"
+              name="libraryId"
               value={libraryId}
               onChange={(e) => setLibraryId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -113,12 +113,13 @@ export default function UpdateSequencePage() {
 
           {/* Start Date Time */}
           <div>
-            <label htmlFor="startDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="sequence-start-date" className="block text-sm font-medium text-gray-700 mb-2">
               Start Date (Optional)
             </label>
             <input
               type="datetime-local"
-              id="startDateTime"
+              id="sequence-start-date"
+              name="startDateTime"
               value={startDateTime}
               onChange={(e) => setStartDateTime(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -128,12 +129,13 @@ export default function UpdateSequencePage() {
 
           {/* End Date Time */}
           <div>
-            <label htmlFor="endDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="sequence-end-date" className="block text-sm font-medium text-gray-700 mb-2">
               End Date (Optional)
             </label>
             <input
               type="datetime-local"
-              id="endDateTime"
+              id="sequence-end-date"
+              name="endDateTime"
               value={endDateTime}
               onChange={(e) => setEndDateTime(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -143,11 +145,12 @@ export default function UpdateSequencePage() {
 
           {/* Duration */}
           <div>
-            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="sequence-duration" className="block text-sm font-medium text-gray-700 mb-2">
               Duration *
             </label>
             <select
-              id="duration"
+              id="sequence-duration"
+              name="duration"
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -164,12 +167,13 @@ export default function UpdateSequencePage() {
 
           {/* Label */}
           <div>
-            <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="sequence-label" className="block text-sm font-medium text-gray-700 mb-2">
               Label *
             </label>
             <input
               type="text"
-              id="label"
+              id="sequence-label"
+              name="label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

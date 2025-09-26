@@ -93,11 +93,11 @@ export async function uploadAsset(formData) {
     const file = formData.get('file')
 
     if (!label || !file) {
-      return { success: false, error: 'กรุณากรอก label และเลือกไฟล์' }
+      return { success: false, error: 'Please fill in label and select file' }
     }
 
     if (!STACKS_USERNAME || !STACKS_PASSWORD) {
-      return { success: false, error: 'ไม่พบข้อมูลการยืนยันตัวตนใน environment variables' }
+      return { success: false, error: 'Authentication credentials not found in environment variables' }
     }
 
     // Step 1: สร้าง library item
@@ -108,15 +108,15 @@ export async function uploadAsset(formData) {
 
     return {
       success: true,
-      message: 'อัพโหลดสำเร็จ',
-      data: { id, pendingId }
+      message: 'Upload successful',
+      data: { id }
     }
 
   } catch (error) {
     console.error('Upload error:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอัพโหลด'
+      error: error instanceof Error ? error.message : 'Error uploading file'
     }
   }
 }
