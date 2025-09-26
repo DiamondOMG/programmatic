@@ -1,0 +1,174 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { uploadAsset } from './upload_library'
+
+export default function UploadPage() {
+  const [label, setLabel] = useState('')
+  const [file, setFile] = useState(null)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState('') // 'success' or 'error'
+  const fileInputRef = useRef(null)
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragOver(false)
+
+    const droppedFiles = Array.from(e.dataTransfer.files)
+    if (droppedFiles.length > 0) {
+      setFile(droppedFiles[0])
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const selectedFiles = Array.from(e.target.files)
+    if (selectedFiles.length > 0) {
+      setFile(selectedFiles[0])
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    if (!label || !file) {
+      setMessage('กรุณากรอก label และเลือกไฟล์')
+      setMessageType('error')
+      return
+    }
+
+    setIsUploading(true)
+    setMessage('')
+
+    try {
+      const formData = new FormData()
+      formData.append('label', label)
+      formData.append('file', file)
+
+      const result = await uploadAsset(formData)
+
+      if (result.success) {
+        setMessage(result.message)
+        setMessageType('success')
+        setLabel('')
+        setFile(null)
+      } else {
+        setMessage(result.error)
+        setMessageType('error')
+      }
+    } catch (error) {
+      setMessage('เกิดข้อผิดพลาดในการอัพโหลด')
+      setMessageType('error')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          อัพโหลด Asset
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Label Input */}
+          <div>
+            <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-2">
+              Label *
+            </label>
+            <input
+              type="text"
+              id="label"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="กรอก label สำหรับ asset"
+              disabled={isUploading}
+            />
+          </div>
+
+          {/* File Upload Area */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ไฟล์ *
+            </label>
+
+            {/* Drag & Drop Area */}
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                isDragOver
+                  ? 'border-blue-400 bg-blue-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              } ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => !isUploading && fileInputRef.current?.click()}
+            >
+              {file ? (
+                <div className="space-y-2">
+                  <div className="text-green-600 font-medium">
+                    ✓ {file.name}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="text-gray-500">
+                    ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    รองรับไฟล์ทุกประเภท
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Hidden File Input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              onChange={handleFileSelect}
+              className="hidden"
+              disabled={isUploading}
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isUploading || !label || !file}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isUploading ? 'กำลังอัพโหลด...' : 'อัพโหลด'}
+          </button>
+        </form>
+
+        {/* Status Message */}
+        {message && (
+          <div className={`mt-4 p-3 rounded-md ${
+            messageType === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
