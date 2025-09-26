@@ -1,0 +1,51 @@
+'use client'
+
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+
+export default function Navbar() {
+  const pathname = usePathname();
+
+  // ไม่แสดง navbar ในหน้าแรก (/)
+  if (pathname === "/") {
+    return null;
+  }
+
+  return (
+    <nav className="bg-white shadow-md border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link href="/" className="text-xl font-bold text-gray-900">
+              Asset CMS
+            </Link>
+          </div>
+
+          <div className="flex items-center space-x-8">
+            <Link
+              href="/upload"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                pathname === "/upload"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              Upload Asset
+            </Link>
+
+            <Link
+              href="/update_sequence"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                pathname === "/update_sequence"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              Update Sequence
+            </Link>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
