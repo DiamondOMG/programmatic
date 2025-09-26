@@ -1,77 +1,89 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { uploadAsset } from './upload_library'
+import { useState } from 'react'
+import { updateSequence } from './update_sequence'
 
-export default function UploadPage() {
+// ฟังก์ชันแปลง datetime-local เป็น UnixTime UTC (ลบ 7 ชมสำหรับไทย timezone)
+function convertToUnixTime(dateTimeString) {
+  if (!dateTimeString) return null
+
+  // สร้าง Date object จาก datetime-local string
+  const date = new Date(dateTimeString)
+
+  // ลบ 7 ชมสำหรับไทย timezone เพื่อแปลงเป็น UTC
+  const utcTime = date.getTime()
+
+  return utcTime.toString()
+}
+
+export default function UpdateSequencePage() {
+  const [libraryId, setLibraryId] = useState('')
+  const [startDateTime, setStartDateTime] = useState('')
+  const [endDateTime, setEndDateTime] = useState('')
+  const [duration, setDuration] = useState('')
   const [label, setLabel] = useState('')
-  const [file, setFile] = useState(null)
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('') // 'success' or 'error'
-  const fileInputRef = useRef(null)
 
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleDragLeave = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    setIsDragOver(false)
-
-    const droppedFiles = Array.from(e.dataTransfer.files)
-    if (droppedFiles.length > 0) {
-      setFile(droppedFiles[0])
-    }
-  }
-
-  const handleFileSelect = (e) => {
-    const selectedFiles = Array.from(e.target.files)
-    if (selectedFiles.length > 0) {
-      setFile(selectedFiles[0])
-    }
-  }
+  // Duration options
+  const durationOptions = [
+    { value: '900000', label: '15s' }, // 15 * 60 * 1000
+    { value: '1800000', label: '30s' } // 30 * 60 * 1000
+  ]
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!label || !file) {
-      setMessage('กรุณากรอก label และเลือกไฟล์')
+    if (!libraryId || !label || !duration) {
+      setMessage('Please fill in all required fields')
       setMessageType('error')
       return
     }
 
-    setIsUploading(true)
+    // ตรวจสอบว่าวันเริ่มต้องก่อนวันจบ (ถ้ามีการกรอกทั้งคู่)
+    if (startDateTime && endDateTime) {
+      const startUnix = convertToUnixTime(startDateTime)
+      const endUnix = convertToUnixTime(endDateTime)
+
+      if (startUnix >= endUnix) {
+        setMessage('Start date must be before end date')
+        setMessageType('error')
+        return
+      }
+    }
+
+    setIsSubmitting(true)
     setMessage('')
 
     try {
       const formData = new FormData()
+      formData.append('libraryId', libraryId)
+      formData.append('startDateTime', convertToUnixTime(startDateTime))
+      formData.append('endDateTime', convertToUnixTime(endDateTime))
+      formData.append('duration', duration)
       formData.append('label', label)
-      formData.append('file', file)
 
-      const result = await uploadAsset(formData)
+      const result = await updateSequence(formData)
 
       if (result.success) {
-        setMessage(result.message)
+        setMessage('Sequence updated successfully')
         setMessageType('success')
+        // Reset form
+        setLibraryId('')
+        setStartDateTime('')
+        setEndDateTime('')
+        setDuration('')
         setLabel('')
-        setFile(null)
       } else {
         setMessage(result.error)
         setMessageType('error')
       }
     } catch (error) {
-      setMessage('เกิดข้อผิดพลาดในการอัพโหลด')
+      setMessage('Error updating sequence')
       setMessageType('error')
     } finally {
-      setIsUploading(false)
+      setIsSubmitting(false)
     }
   }
 
@@ -79,11 +91,78 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          อัพโหลด Asset
+          Update Sequence
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Label Input */}
+          {/* Library ID */}
+          <div>
+            <label htmlFor="libraryId" className="block text-sm font-medium text-gray-700 mb-2">
+              Library ID *
+            </label>
+            <input
+              type="text"
+              id="libraryId"
+              value={libraryId}
+              onChange={(e) => setLibraryId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter Library ID"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Start Date Time */}
+          <div>
+            <label htmlFor="startDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+              Start Date (Optional)
+            </label>
+            <input
+              type="datetime-local"
+              id="startDateTime"
+              value={startDateTime}
+              onChange={(e) => setStartDateTime(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* End Date Time */}
+          <div>
+            <label htmlFor="endDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+              End Date (Optional)
+            </label>
+            <input
+              type="datetime-local"
+              id="endDateTime"
+              value={endDateTime}
+              onChange={(e) => setEndDateTime(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSubmitting}
+            />
+          </div>
+
+          {/* Duration */}
+          <div>
+            <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+              Duration *
+            </label>
+            <select
+              id="duration"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isSubmitting}
+            >
+              <option value="">Select Duration</option>
+              {durationOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Label */}
           <div>
             <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-2">
               Label *
@@ -94,67 +173,18 @@ export default function UploadPage() {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="กรอก label สำหรับ asset"
-              disabled={isUploading}
-            />
-          </div>
-
-          {/* File Upload Area */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ไฟล์ *
-            </label>
-
-            {/* Drag & Drop Area */}
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                isDragOver
-                  ? 'border-blue-400 bg-blue-50'
-                  : 'border-gray-300 hover:border-gray-400'
-              } ${isUploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onClick={() => !isUploading && fileInputRef.current?.click()}
-            >
-              {file ? (
-                <div className="space-y-2">
-                  <div className="text-green-600 font-medium">
-                    ✓ {file.name}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="text-gray-500">
-                    ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์
-                  </div>
-                  <div className="text-sm text-gray-400">
-                    รองรับไฟล์ทุกประเภท
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Hidden File Input */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileSelect}
-              className="hidden"
-              disabled={isUploading}
+              placeholder="Enter Label"
+              disabled={isSubmitting}
             />
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isUploading || !label || !file}
+            disabled={isSubmitting || !libraryId || !label || !duration}
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {isUploading ? 'กำลังอัพโหลด...' : 'อัพโหลด'}
+            {isSubmitting ? 'Updating...' : 'Update Sequence'}
           </button>
         </form>
 

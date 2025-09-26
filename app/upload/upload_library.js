@@ -1,8 +1,5 @@
 'use server'
 
-import { promises as fs } from 'fs'
-import path from 'path'
-
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME
 const STACKS_PASSWORD = process.env.STACKS_PASSWORD
