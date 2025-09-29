@@ -10,22 +10,11 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('') // 'success' or 'error'
-  const [libraryId, setLibraryId] = useState('')
   const fileInputRef = useRef(null)
 
-  // Load library ID from localStorage on component mount
-  useEffect(() => {
-    const savedLibraryId = localStorage.getItem('lastLibraryId')
-    if (savedLibraryId) {
-      setLibraryId(savedLibraryId)
-    }
-  }, [])
 
-  // Clear library ID from localStorage
-  const clearLibraryId = () => {
-    localStorage.removeItem('lastLibraryId')
-    setLibraryId('')
-  }
+
+
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -76,9 +65,6 @@ export default function UploadPage() {
       if (result.success) {
         setMessage(result.message)
         setMessageType('success')
-        setLibraryId(result.data.id)
-        // Save to localStorage
-        localStorage.setItem('lastLibraryId', result.data.id)
         setLabel('')
         setFile(null)
       } else {
@@ -188,39 +174,7 @@ export default function UploadPage() {
           }`}>
             {message}
           </div>
-        )}
-
-        {/* Library ID Display */}
-        {libraryId && (
-          <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm font-medium text-blue-800">Last Upload</h3>
-              <button
-                onClick={clearLibraryId}
-                className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
-              >
-                Clear
-              </button>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-blue-700 mb-1">Library ID</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={libraryId}
-                  readOnly
-                  className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <button
-                  onClick={() => navigator.clipboard.writeText(libraryId)}
-                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        )}        
       </div>
     </div>
   )
