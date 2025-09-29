@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Asset Management",
-  description: "Asset Management System",
+  title: "Programmatic",
+  description: "Programmatic System",
+  icons: {
+    icon: '/screen_icon_1.png',
+  },
 };
 
 export default function RootLayout({ children }) {
