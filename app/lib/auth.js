@@ -4,6 +4,17 @@ import bcrypt from 'bcryptjs'
 // Register new user
 export async function registerUser(email, password, userInfo = {}) {
   try {
+    // Check if email already exists in custom users table
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('email')
+      .eq('email', email)
+      .single()
+
+    if (existingUser) {
+      throw new Error('อีเมลนี้มีผู้ใช้แล้ว กรุณาใช้อีเมลอื่นหรือเข้าสู่ระบบ')
+    }
+
     // Hash password before storing
     const saltRounds = 10
     const hashedPassword = await bcrypt.hash(password, saltRounds)
@@ -13,7 +24,13 @@ export async function registerUser(email, password, userInfo = {}) {
       password
     })
 
-    if (error) throw error
+    if (error) {
+      // Handle existing user case
+      if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+        throw new Error('อีเมลนี้มีผู้ใช้แล้วในระบบ กรุณาใช้อีเมลอื่นหรือเข้าสู่ระบบ')
+      }
+      throw error
+    }
 
     // If user is created successfully, add additional info to users table
     if (data.user) {

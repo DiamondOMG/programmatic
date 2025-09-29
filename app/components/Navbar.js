@@ -7,7 +7,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // ไม่แสดง navbar ในหน้าแรก (/)
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/auth") {
     return null;
   }
 
