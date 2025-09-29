@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
-import { registerUser, loginUser } from "../lib/auth";
+import { loginUser, registerUser, getCurrentUser } from "../lib/auth-actions";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,32 +13,27 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is already logged in
+    // ตรวจสอบว่า user มี session หรือไม่
     const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
+      const result = await getCurrentUser();
+      if (result.success) {
         router.push("/dashboard");
       }
     };
     checkUser();
   }, [router]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (formData) => {
     setLoading(true);
     setMessage("");
 
     try {
-      let result;
-      if (isLogin) {
-        result = await loginUser(email, password);
-      } else {
-        result = await registerUser(email, password);
-      }
+      const action = isLogin ? loginUser : registerUser;
+      const result = await action(formData);
 
-      if (result.error) throw result.error;
+      if (!result.success) {
+        throw new Error(result.message);
+      }
 
       if (isLogin) {
         setMessage("เข้าสู่ระบบสำเร็จ! กำลังเปลี่ยนหน้า...");
@@ -64,7 +58,7 @@ export default function AuthPage() {
             {isLogin ? "เข้าสู่ระบบ" : "สมัครสมาชิก"}
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form action={handleSubmit} className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">

@@ -1,53 +1,57 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { supabase, getCurrentUser, logoutUser } from '../lib/auth'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { getCurrentUser, logoutUser } from "@/app/lib/auth-actions";
 
 export default function Dashboard() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    checkUser()
-  }, [])
+    checkUser();
+  }, []);
 
   const checkUser = async () => {
     try {
-      const { user } = await getCurrentUser()
-      if (user) {
-        setUser(user)
+      const result = await getCurrentUser();
+      if (result.success && result.user) {
+        setUser(result.user);
       } else {
-        router.push('/auth')
+        router.push("/auth");
       }
     } catch (error) {
-      console.error('Error checking user:', error)
-      router.push('/auth')
+      console.error("Error checking user:", error);
+      router.push("/auth");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
     try {
-      await logoutUser()
-      router.push('/')
+      const result = await logoutUser();
+      if (result.success) {
+        router.push("/");
+      } else {
+        throw new Error(result.message);
+      }
     } catch (error) {
-      console.error('Error logging out:', error)
+      console.error("Error logging out:", error);
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">กำลังโหลด...</div>
       </div>
-    )
+    );
   }
 
   if (!user) {
-    return null
+    return null;
   }
 
   return (
@@ -68,8 +72,12 @@ export default function Dashboard() {
             <div>
               <h2 className="text-lg font-semibold text-gray-800">ข้อมูลผู้ใช้</h2>
               <div className="mt-2 p-4 bg-gray-50 rounded-md">
-                <p><strong>อีเมล:</strong> {user.email}</p>
-                <p><strong>UUID:</strong> {user.id}</p>
+                <p>
+                  <strong>อีเมล:</strong> {user.email}
+                </p>
+                <p>
+                  <strong>UUID:</strong> {user.id}
+                </p>
               </div>
             </div>
 
@@ -97,5 +105,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }
