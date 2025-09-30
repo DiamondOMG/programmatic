@@ -16,7 +16,7 @@ export const metadata = {
   title: "Programmatic",
   description: "Programmatic System",
   icons: {
-    icon: '/screen_icon_1.png',
+    icon: '/screen_icon_3.png',
   },
 };
 
