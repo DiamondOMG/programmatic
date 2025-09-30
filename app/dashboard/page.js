@@ -75,9 +75,6 @@ export default function Dashboard() {
                 <p>
                   <strong>อีเมล:</strong> {user.email}
                 </p>
-                <p>
-                  <strong>UUID:</strong> {user.id}
-                </p>
               </div>
             </div>
 
