@@ -112,14 +112,12 @@ async function createLibraryRecord(id, pendingId) {
     throw new Error("User not authenticated");
   }
 
-  const { error } = await supabase
-    .from("library")
-    .insert({
-      id: id,
-      pending_id: pendingId,
-      user_id: user.id,
-      created: new Date().toISOString(),
-    });
+  const { error } = await supabase.from("library").insert({
+    id: id,
+    pending_id: pendingId,
+    user_id: user.id,
+    created: new Date().toISOString(),
+  });
 
   if (error) {
     throw new Error(`Failed to create library record: ${error.message}`);
