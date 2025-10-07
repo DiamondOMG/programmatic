@@ -17,28 +17,28 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-xl font-bold text-gray-900">
-              Asset CMS
+              Programmatic CMS
             </Link>
           </div>
 
           <div className="flex items-center space-x-8">
             <Link
-              href="/library"
+              href="/content"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname === "/library"
+                pathname === "/content"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
             >
-              Library
+              Content
             </Link>
             <Link
-              href="/sequence"
+              href="/campaign"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname === "/sequence"
+                pathname === "/campaign"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
             >
-              Sequence
+              Campaign
             </Link>
 
             <Link

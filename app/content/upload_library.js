@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { getCurrentUser } from "../lib/auth-actions.js";
+import { cookies } from "next/headers"; // <--- เพิ่มตัวนี้
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
@@ -10,7 +11,19 @@ const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 // ใช้ Supabase client เดียวกับ auth-actions.js
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+async function getAuthenticatedSupabaseClient() {
+  const cookieStore = await cookies(); // 👈 แก้ตรงนี้: AWAIT cookies()
+  const accessToken = cookieStore.get("access_token")?.value;
+
+  // สร้าง Client ที่ฉีด JWT จากคุกกี้เข้าไปใน Header
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : undefined,
+      },
+    },
+  });
+}
 
 // ฟังก์ชันสร้าง pendingId (เลขสุ่ม + timestamp)
 function generatePendingId() {
@@ -106,13 +119,18 @@ async function uploadFile(file, itemId, pendingId, fileName) {
 }
 
 // ฟังก์ชันบันทึกข้อมูลลง library table (ใช้ getCurrentUser จาก auth-actions.js)
+// ฟังก์ชันบันทึกข้อมูลลง library table
 async function createLibraryRecord(id, pendingId) {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
     throw new Error("User not authenticated");
   }
+  console.log(user.id);
 
-  const { error } = await supabase.from("library").insert({
+  // 👈 แก้ตรงนี้: AWAIT การสร้าง Client
+  const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+
+  const { error } = await supabaseAuthenticated.from("library").insert({
     id: id,
     pending_id: pendingId,
     user_id: user.id,
@@ -120,6 +138,7 @@ async function createLibraryRecord(id, pendingId) {
   });
 
   if (error) {
+    // **ส่วนนี้ไม่ควรติดแล้ว**
     throw new Error(`Failed to create library record: ${error.message}`);
   }
 

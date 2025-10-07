@@ -97,7 +97,7 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Upload Content
+          Add Content
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +107,7 @@ export default function UploadPage() {
               htmlFor="upload-label"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Label *
+              Content *
             </label>
             <input
               type="text"
@@ -116,7 +116,7 @@ export default function UploadPage() {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter label for asset"
+              placeholder="Enter Content Name"
               disabled={isUploading}
             />
           </div>

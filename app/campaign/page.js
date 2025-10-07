@@ -67,7 +67,7 @@ export default function UpdateSequencePage() {
       const result = await updateSequence(formData)
 
       if (result.success) {
-        setMessage('Sequence updated successfully')
+        setMessage('Campaign updated successfully')
         setMessageType('success')
         // Reset form
         setLibraryId('')
@@ -80,7 +80,7 @@ export default function UpdateSequencePage() {
         setMessageType('error')
       }
     } catch (error) {
-      setMessage('Error updating sequence')
+      setMessage('Error updating campaign')
       setMessageType('error')
     } finally {
       setIsSubmitting(false)
@@ -97,7 +97,7 @@ export default function UpdateSequencePage() {
           {/* Library ID */}
           <div>
             <label htmlFor="sequence-library-id" className="block text-sm font-medium text-gray-700 mb-2">
-              Library ID *
+              Content ID *
             </label>
             <input
               type="text"
@@ -106,7 +106,7 @@ export default function UpdateSequencePage() {
               value={libraryId}
               onChange={(e) => setLibraryId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter Library ID"
+              placeholder="Enter Content ID"
               disabled={isSubmitting}
             />
           </div>
@@ -165,22 +165,6 @@ export default function UpdateSequencePage() {
             </select>
           </div>
 
-          {/* Label */}
-          <div>
-            <label htmlFor="sequence-label" className="block text-sm font-medium text-gray-700 mb-2">
-              Label *
-            </label>
-            <input
-              type="text"
-              id="sequence-label"
-              name="label"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter Label"
-              disabled={isSubmitting}
-            />
-          </div>
 
           {/* Submit Button */}
           <button

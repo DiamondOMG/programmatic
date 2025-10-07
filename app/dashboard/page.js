@@ -82,19 +82,19 @@ export default function Dashboard() {
               <h2 className="text-lg font-semibold text-gray-800">เมนู</h2>
               <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <a
-                  href="/library"
+                  href="/content"
                   className="p-4 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors block"
                 >
-                  <h3 className="font-medium text-blue-900">อัปโหลด Asset</h3>
-                  <p className="text-sm text-blue-700 mt-1">จัดการไฟล์และ assets</p>
+                  <h3 className="font-medium text-blue-900">Add Content</h3>
+    
                 </a>
 
                 <a
-                  href="/sequence"
+                  href="/campaign"
                   className="p-4 bg-green-50 rounded-md hover:bg-green-100 transition-colors block"
                 >
-                  <h3 className="font-medium text-green-900">อัปเดต Sequence</h3>
-                  <p className="text-sm text-green-700 mt-1">จัดการลำดับข้อมูล</p>
+                  <h3 className="font-medium text-green-900">Update Campaign</h3>
+          
                 </a>
               </div>
             </div>
