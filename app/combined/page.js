@@ -1,184 +1,215 @@
-'use client'
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { uploadAsset } from "../content/upload_library"
-import { updateSequence } from "../campaign/update_sequence"
+import { useState, useRef, useEffect } from "react";
+import { uploadAsset } from "../content/upload_library";
+import { updateSequence } from "../campaign/update_sequence";
 
 // ฟังก์ชันแปลง datetime-local เป็น UnixTime UTC (ลบ 7 ชมสำหรับไทย timezone)
 function convertToUnixTime(dateTimeString) {
-  if (!dateTimeString) return null
+  if (!dateTimeString) return null;
 
   // สร้าง Date object จาก datetime-local string
-  const date = new Date(dateTimeString)
+  const date = new Date(dateTimeString);
 
   // ลบ 7 ชมสำหรับไทย timezone เพื่อแปลงเป็น UTC
-  const utcTime = date.getTime()
+  const utcTime = date.getTime();
 
-  return utcTime.toString()
+  return utcTime.toString();
 }
 
 export default function CombinedPage() {
   // Content Upload States (Left Side)
-  const [contentLabel, setContentLabel] = useState("")
-  const [contentFile, setContentFile] = useState(null)
-  const [isContentDragOver, setIsContentDragOver] = useState(false)
-  const [isContentUploading, setIsContentUploading] = useState(false)
-  const [contentMessage, setContentMessage] = useState("")
-  const [contentMessageType, setContentMessageType] = useState("")
-  const [contentLibraryId, setContentLibraryId] = useState("")
-  const contentFileInputRef = useRef(null)
+  const [contentLabel, setContentLabel] = useState("");
+  const [contentFile, setContentFile] = useState(null);
+  const [isContentDragOver, setIsContentDragOver] = useState(false);
+  const [isContentUploading, setIsContentUploading] = useState(false);
+  const [contentMessage, setContentMessage] = useState("");
+  const [contentMessageType, setContentMessageType] = useState("");
+  const [contentLibraryId, setContentLibraryId] = useState("");
+  const contentFileInputRef = useRef(null);
+  const [campaignType, setCampaignType] = useState("Landscape");
+  const [contentOrder, setContentOrder] = useState("1");
+  const [slotOrder, setSlotOrder] = useState("1");
 
   // Campaign States (Right Side)
-  const [campaignLibraryId, setCampaignLibraryId] = useState('')
-  const [campaignStartDateTime, setCampaignStartDateTime] = useState('')
-  const [campaignEndDateTime, setCampaignEndDateTime] = useState('')
-  const [campaignDuration, setCampaignDuration] = useState('')
-  const [isCampaignSubmitting, setIsCampaignSubmitting] = useState(false)
-  const [campaignMessage, setCampaignMessage] = useState('')
-  const [campaignMessageType, setCampaignMessageType] = useState('')
+  const [campaignLibraryId, setCampaignLibraryId] = useState("");
+  const [campaignStartDateTime, setCampaignStartDateTime] = useState("");
+  const [campaignEndDateTime, setCampaignEndDateTime] = useState("");
+  const [campaignDuration, setCampaignDuration] = useState("");
+  const [isCampaignSubmitting, setIsCampaignSubmitting] = useState(false);
+  const [campaignMessage, setCampaignMessage] = useState("");
+  const [campaignMessageType, setCampaignMessageType] = useState("");
 
-  // Duration options for campaign
   const durationOptions = [
-    { value: '900000', label: '15s' },
-    { value: '1800000', label: '30s' }
-  ]
+    { value: "900000", label: "15s" },
+    { value: "1800000", label: "30s" },
+  ];
 
-  // Load library ID from localStorage on component mount
+  // Format date to yyyy-MM-ddTHH:mm for input[type="datetime-local"]
+  const formatDateForInput = (date) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const pad = (num) => num.toString().padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+      d.getDate()
+    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  // Set default start date to current time when component mounts
   useEffect(() => {
-    const savedLibraryId = localStorage.getItem("lastLibraryId")
+    // Set current time as default start date
+    const now = new Date();
+    setCampaignStartDateTime(formatDateForInput(now));
+
+    // Load library ID from localStorage
+    const savedLibraryId = localStorage.getItem("lastLibraryId");
     if (savedLibraryId) {
-      setContentLibraryId(savedLibraryId)
-      setCampaignLibraryId(savedLibraryId) // Also set for campaign
+      setContentLibraryId(savedLibraryId);
+      setCampaignLibraryId(savedLibraryId);
     }
-  }, [])
+  }, []);
 
   // Clear library ID from localStorage
   const clearLibraryId = () => {
-    localStorage.removeItem("lastLibraryId")
-    setContentLibraryId("")
-    setCampaignLibraryId("")
-  }
+    localStorage.removeItem("lastLibraryId");
+    setContentLibraryId("");
+    setCampaignLibraryId("");
+  };
 
   // Content Upload Handlers
   const handleContentDragOver = (e) => {
-    e.preventDefault()
-    setIsContentDragOver(true)
-  }
+    e.preventDefault();
+    setIsContentDragOver(true);
+  };
 
   const handleContentDragLeave = (e) => {
-    e.preventDefault()
-    setIsContentDragOver(false)
-  }
+    e.preventDefault();
+    setIsContentDragOver(false);
+  };
 
   const handleContentDrop = (e) => {
-    e.preventDefault()
-    setIsContentDragOver(false)
+    e.preventDefault();
+    setIsContentDragOver(false);
 
-    const droppedFiles = Array.from(e.dataTransfer.files)
+    const droppedFiles = Array.from(e.dataTransfer.files);
     if (droppedFiles.length > 0) {
-      setContentFile(droppedFiles[0])
+      setContentFile(droppedFiles[0]);
     }
-  }
+  };
 
   const handleContentFileSelect = (e) => {
-    const selectedFiles = Array.from(e.target.files)
+    const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length > 0) {
-      setContentFile(selectedFiles[0])
+      setContentFile(selectedFiles[0]);
     }
-  }
+  };
 
   const handleContentSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!contentLabel || !contentFile) {
-      setContentMessage("Please fill in label and select file")
-      setContentMessageType("error")
-      return
+      setContentMessage("Please fill in label and select file");
+      setContentMessageType("error");
+      return;
     }
 
-    setIsContentUploading(true)
-    setContentMessage("")
+    setIsContentUploading(true);
+    setContentMessage("");
 
     try {
-      const formData = new FormData()
-      formData.append("label", contentLabel)
-      formData.append("file", contentFile)
+      const formData = new FormData();
+      formData.append("label", contentLabel);
+      formData.append("file", contentFile);
 
-      const result = await uploadAsset(formData)
+      const result = await uploadAsset(formData);
 
       if (result.success) {
-        setContentMessage(result.message)
-        setContentMessageType("success")
-        setContentLibraryId(result.data.id)
-        setCampaignLibraryId(result.data.id) // Also set for campaign
-        localStorage.setItem("lastLibraryId", result.data.id)
-        setContentLabel("")
-        setContentFile(null)
+        setContentMessage(result.message);
+        setContentMessageType("success");
+        setContentLibraryId(result.data.id);
+        setCampaignLibraryId(result.data.id); // Also set for campaign
+        localStorage.setItem("lastLibraryId", result.data.id);
+        setContentLabel("");
+        setContentFile(null);
       } else {
-        setContentMessage(result.error)
-        setContentMessageType("error")
+        setContentMessage(result.error);
+        setContentMessageType("error");
       }
     } catch (error) {
-      setContentMessage("Error uploading file")
-      setContentMessageType("error")
+      setContentMessage("Error uploading file");
+      setContentMessageType("error");
     } finally {
-      setIsContentUploading(false)
+      setIsContentUploading(false);
     }
-  }
+  };
 
   // Campaign Handlers
   const handleCampaignSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!campaignLibraryId || !campaignDuration) {
-      setCampaignMessage('Please fill in all required fields')
-      setCampaignMessageType('error')
-      return
+      setCampaignMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
+      setCampaignMessageType("error");
+      return;
     }
 
-    // ตรวจสอบว่าวันเริ่มต้องก่อนวันจบ (ถ้ามีการกรอกทั้งคู่)
-    if (campaignStartDateTime && campaignEndDateTime) {
-      const startUnix = convertToUnixTime(campaignStartDateTime)
-      const endUnix = convertToUnixTime(campaignEndDateTime)
+    const now = new Date();
+    const startDate = campaignStartDateTime
+      ? new Date(campaignStartDateTime)
+      : now;
+    const endDate = campaignEndDateTime ? new Date(campaignEndDateTime) : null;
 
-      if (startUnix >= endUnix) {
-        setCampaignMessage('Start date must be before end date')
-        setCampaignMessageType('error')
-        return
-      }
+    // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าปัจจุบัน
+    if (startDate < now) {
+      setCampaignMessage("ไม่สามารถเลือกเวลาย้อนหลังได้");
+      setCampaignMessageType("error");
+      return;
     }
 
-    setIsCampaignSubmitting(true)
-    setCampaignMessage('')
+    // ตรวจสอบว่า EndDate ต้องมากกว่า StartDate
+    if (endDate && endDate <= startDate) {
+      setCampaignMessage("วันสิ้นสุดต้องมากกว่าวันเริ่มต้น");
+      setCampaignMessageType("error");
+      return;
+    }
+
+    setIsCampaignSubmitting(true);
+    setCampaignMessage("");
 
     try {
-      const formData = new FormData()
-      formData.append('libraryId', campaignLibraryId)
-      formData.append('startDateTime', convertToUnixTime(campaignStartDateTime))
-      formData.append('endDateTime', convertToUnixTime(campaignEndDateTime))
-      formData.append('duration', campaignDuration)
+      const formData = new FormData();
+      formData.append("libraryId", campaignLibraryId);
+      formData.append(
+        "startDateTime",
+        convertToUnixTime(campaignStartDateTime)
+      );
+      formData.append("endDateTime", convertToUnixTime(campaignEndDateTime));
+      formData.append("duration", campaignDuration);
+      formData.append("type", campaignType);
+      formData.append("contentOrder", contentOrder);
+      formData.append("slotOrder", slotOrder);
 
-      const result = await updateSequence(formData)
+      const result = await updateSequence(formData);
 
       if (result.success) {
-        setCampaignMessage('Campaign updated successfully')
-        setCampaignMessageType('success')
+        setCampaignMessage("Campaign updated successfully");
+        setCampaignMessageType("success");
         // Reset form
-        setCampaignLibraryId('')
-        setCampaignStartDateTime('')
-        setCampaignEndDateTime('')
-        setCampaignDuration('')
+        setCampaignLibraryId("");
+        setCampaignStartDateTime("");
+        setCampaignEndDateTime("");
+        setCampaignDuration("");
       } else {
-        setCampaignMessage(result.error)
-        setCampaignMessageType('error')
+        setCampaignMessage(result.error);
+        setCampaignMessageType("error");
       }
     } catch (error) {
-      setCampaignMessage('Error updating campaign')
-      setCampaignMessageType('error')
+      setCampaignMessage("Error updating campaign");
+      setCampaignMessageType("error");
     } finally {
-      setIsCampaignSubmitting(false)
+      setIsCampaignSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -230,12 +261,16 @@ export default function CombinedPage() {
                       ? "border-blue-400 bg-blue-50"
                       : "border-gray-300 hover:border-gray-400"
                   } ${
-                    isContentUploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                    isContentUploading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
                   }`}
                   onDragOver={handleContentDragOver}
                   onDragLeave={handleContentDragLeave}
                   onDrop={handleContentDrop}
-                  onClick={() => !isContentUploading && contentFileInputRef.current?.click()}
+                  onClick={() =>
+                    !isContentUploading && contentFileInputRef.current?.click()
+                  }
                 >
                   {contentFile ? (
                     <div className="space-y-2">
@@ -296,7 +331,9 @@ export default function CombinedPage() {
             {contentLibraryId && (
               <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-medium text-blue-800">Last Upload</h3>
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Last Upload
+                  </h3>
                   <button
                     onClick={clearLibraryId}
                     className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
@@ -316,7 +353,9 @@ export default function CombinedPage() {
                       className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
-                      onClick={() => navigator.clipboard.writeText(contentLibraryId)}
+                      onClick={() =>
+                        navigator.clipboard.writeText(contentLibraryId)
+                      }
                       className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     >
                       Copy
@@ -336,7 +375,10 @@ export default function CombinedPage() {
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
               {/* Campaign Library ID */}
               <div>
-                <label htmlFor="campaign-library-id" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="campaign-library-id"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Content ID *
                 </label>
                 <input
@@ -353,39 +395,50 @@ export default function CombinedPage() {
 
               {/* Campaign Start Date Time */}
               <div>
-                <label htmlFor="campaign-start-date" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="campaign-start-date"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Start Date (Optional)
                 </label>
                 <input
                   type="datetime-local"
-                  id="campaign-start-date"
-                  name="startDateTime"
-                  value={campaignStartDateTime}
+                  id="startDateTime"
+                  className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                  value={
+                    campaignStartDateTime
+                      ? campaignStartDateTime
+                      : formatDateForInput(new Date())
+                  }
+                  min={formatDateForInput(new Date())}
                   onChange={(e) => setCampaignStartDateTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isCampaignSubmitting}
                 />
               </div>
 
               {/* Campaign End Date Time */}
               <div>
-                <label htmlFor="campaign-end-date" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="campaign-end-date"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   End Date (Optional)
                 </label>
                 <input
                   type="datetime-local"
-                  id="campaign-end-date"
-                  name="endDateTime"
+                  id="endDateTime"
+                  className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                   value={campaignEndDateTime}
+                  min={
+                    campaignStartDateTime
+                      ? campaignStartDateTime
+                      : formatDateForInput(new Date())
+                  }
                   onChange={(e) => setCampaignEndDateTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isCampaignSubmitting}
                 />
-              </div>
-
-              {/* Campaign Duration */}
-              <div>
-                <label htmlFor="campaign-duration" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="campaign-duration"
+                  className="block text-sm font-medium text-gray-700 my-3"
+                >
                   Duration *
                 </label>
                 <select
@@ -404,24 +457,95 @@ export default function CombinedPage() {
                   ))}
                 </select>
               </div>
+              {/* Campaign Type */}
+              <div>
+                <label
+                  htmlFor="campaign-type"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Type Campaign
+                </label>
+                <select
+                  id="campaign-type"
+                  value={campaignType}
+                  onChange={(e) => setCampaignType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isCampaignSubmitting}
+                >
+                  <option value="Portrait">Portrait</option>
+                  <option value="Landscape">Landscape</option>
+                </select>
+              </div>
+
+              {/* Content Order */}
+              <div>
+                <label
+                  htmlFor="content-order"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Content Order
+                </label>
+                <select
+                  id="content-order"
+                  value={contentOrder}
+                  onChange={(e) => setContentOrder(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isCampaignSubmitting}
+                >
+                  {[1, 2, 3].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Slot Order */}
+              <div>
+                <label
+                  htmlFor="slot-order"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Slot Order
+                </label>
+                <select
+                  id="slot-order"
+                  value={slotOrder}
+                  onChange={(e) => setSlotOrder(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isCampaignSubmitting}
+                >
+                  {[1, 2, 3].map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Campaign Submit Button */}
               <button
                 type="submit"
-                disabled={isCampaignSubmitting || !campaignLibraryId || !campaignDuration}
+                disabled={
+                  isCampaignSubmitting ||
+                  !campaignLibraryId ||
+                  !campaignDuration
+                }
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isCampaignSubmitting ? 'Updating...' : 'Update Campaign'}
+                {isCampaignSubmitting ? "Updating..." : "Update Campaign"}
               </button>
             </form>
 
             {/* Campaign Status Message */}
             {campaignMessage && (
-              <div className={`mt-4 p-3 rounded-md ${
-                campaignMessageType === 'success'
-                  ? 'bg-green-50 text-green-800 border border-green-200'
-                  : 'bg-red-50 text-red-800 border border-red-200'
-              }`}>
+              <div
+                className={`mt-4 p-3 rounded-md ${
+                  campaignMessageType === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
                 {campaignMessage}
               </div>
             )}
@@ -429,5 +553,5 @@ export default function CombinedPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
