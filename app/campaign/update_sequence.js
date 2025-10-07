@@ -19,11 +19,7 @@ export async function updateSequence(formData) {
     const startDateTime = formData.get('startDateTime') // รับเป็น UnixTime UTC แล้ว
     const endDateTime = formData.get('endDateTime') // รับเป็น UnixTime UTC แล้ว
     const duration = formData.get('duration')
-    const label = formData.get('label')
 
-    if (!libraryId || !label) {
-      return { success: false, error: 'กรุณากรอก Library ID และ Label' }
-    }
 
     if (!STACKS_USERNAME || !STACKS_PASSWORD) {
       return { success: false, error: 'ไม่พบข้อมูลการยืนยันตัวตนใน environment variables' }
@@ -35,7 +31,6 @@ export async function updateSequence(formData) {
       id: libraryId,
       data: {
         modifiedMillis: generateModifiedMillis(),
-        label: label
       }
     }
 
