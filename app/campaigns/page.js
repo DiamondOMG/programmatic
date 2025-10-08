@@ -161,6 +161,8 @@ export default function CombinedPage() {
             JSON.stringify({ [contentLabel]: result.data.id })
           );
         }
+        await triggerAutoCampaignUpdate(result.data.id, contentLabel);
+        // Reset form
         setContentLabel("");
         setContentFile(null);
       } else {
@@ -258,6 +260,39 @@ export default function CombinedPage() {
     }
   };
 
+  // ฟังก์ชัน trigger อัปเดตแคมเปญอัตโนมัติหลัง upload สำเร็จ
+  const triggerAutoCampaignUpdate = async (libraryId, contentName) => {
+    try {
+      const formData = new FormData();
+      formData.append("libraryId", libraryId);
+      formData.append(
+        "startDateTime",
+        convertToUnixTime(campaignStartDateTime || new Date())
+      );
+      formData.append(
+        "endDateTime",
+        convertToUnixTime(campaignEndDateTime || "")
+      );
+      formData.append("duration", campaignDuration);
+      formData.append("type", campaignType);
+      formData.append("contentOrder", contentOrder);
+      formData.append("slotOrder", slotOrder);
+
+      const result = await updateSequence(formData);
+
+      if (result.success) {
+        setCampaignMessage(`Auto-updated campaign with ${contentName}`);
+        setCampaignMessageType("success");
+      } else {
+        setCampaignMessage(result.error);
+        setCampaignMessageType("error");
+      }
+    } catch (error) {
+      setCampaignMessage("Error auto-updating campaign");
+      setCampaignMessageType("error");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -266,153 +301,6 @@ export default function CombinedPage() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Side - Content Upload */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Add Content
-            </h2>
-
-            <form onSubmit={handleContentSubmit} className="space-y-4">
-              {/* Content Label Input */}
-              <div>
-                <label
-                  htmlFor="content-label"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Content Name *
-                </label>
-                <input
-                  type="text"
-                  id="content-label"
-                  name="label"
-                  value={contentLabel}
-                  onChange={(e) => setContentLabel(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter Content Name"
-                  disabled={isContentUploading}
-                />
-              </div>
-
-              {/* Content File Upload Area */}
-              <div>
-                <label
-                  htmlFor="content-file"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  File *
-                </label>
-
-                <div
-                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    isContentDragOver
-                      ? "border-blue-400 bg-blue-50"
-                      : "border-gray-300 hover:border-gray-400"
-                  } ${
-                    isContentUploading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "cursor-pointer"
-                  }`}
-                  onDragOver={handleContentDragOver}
-                  onDragLeave={handleContentDragLeave}
-                  onDrop={handleContentDrop}
-                  onClick={() =>
-                    !isContentUploading && contentFileInputRef.current?.click()
-                  }
-                >
-                  {contentFile ? (
-                    <div className="space-y-2">
-                      <div className="text-green-600 font-medium">
-                        ✓ {contentFile.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {(contentFile.size / 1024 / 1024).toFixed(2)} MB
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="text-gray-500">
-                        Drag file here or click to select file
-                      </div>
-                      <div className="text-sm text-gray-400">
-                        Supports all file types
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <input
-                  ref={contentFileInputRef}
-                  type="file"
-                  id="content-file"
-                  name="file"
-                  onChange={handleContentFileSelect}
-                  className="hidden"
-                  disabled={isContentUploading}
-                />
-              </div>
-
-              {/* Content Submit Button */}
-              <button
-                type="submit"
-                disabled={isContentUploading || !contentLabel || !contentFile}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isContentUploading ? "Uploading..." : "Upload Content"}
-              </button>
-            </form>
-
-            {/* Content Status Message */}
-            {contentMessage && (
-              <div
-                className={`mt-4 p-3 rounded-md ${
-                  contentMessageType === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                {contentMessage}
-              </div>
-            )}
-
-            {/* Content Library ID Display */}
-            {contentLibraryId && (
-              <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-sm font-medium text-blue-800">
-                    Last Upload
-                  </h3>
-                  <button
-                    onClick={clearLibraryId}
-                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
-                  >
-                    Clear
-                  </button>
-                </div>
-                <div className="mb-3">
-                  <label className="block text-xs font-medium text-blue-700 mb-1">
-                    Content Name
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={lastContentName}
-                      readOnly
-                      className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />{" "}
-                    <button
-                      onClick={() =>
-                        navigator.clipboard.writeText(lastContentName)
-                      }
-                      className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Right Side - Campaign Management */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
@@ -420,7 +308,7 @@ export default function CombinedPage() {
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
-              <div>
+              {/* <div>
                 <label
                   htmlFor="campaign-content-name"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -437,7 +325,7 @@ export default function CombinedPage() {
                   placeholder="Enter Content Name "
                   disabled={isCampaignSubmitting}
                 />
-              </div>
+              </div> */}
               {/* Campaign Type */}
               <div>
                 <label
@@ -571,7 +459,7 @@ export default function CombinedPage() {
               </div>
 
               {/* Campaign Submit Button */}
-              <button
+              {/* <button
                 type="submit"
                 disabled={
                   isCampaignSubmitting ||
@@ -581,11 +469,11 @@ export default function CombinedPage() {
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isCampaignSubmitting ? "Updating..." : "Update Campaign"}
-              </button>
+              </button> */}
             </form>
 
             {/* Campaign Status Message */}
-            {campaignMessage && (
+            {/* {campaignMessage && (
               <div
                 className={`mt-4 p-3 rounded-md ${
                   campaignMessageType === "success"
@@ -595,7 +483,153 @@ export default function CombinedPage() {
               >
                 {campaignMessage}
               </div>
+            )} */}
+          </div>
+          {/* Left Side - Content Upload */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+              Add Content
+            </h2>
+
+            <form onSubmit={handleContentSubmit} className="space-y-4">
+              {/* Content Label Input */}
+              <div>
+                <label
+                  htmlFor="content-label"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Content Name *
+                </label>
+                <input
+                  type="text"
+                  id="content-label"
+                  name="label"
+                  value={contentLabel}
+                  onChange={(e) => setContentLabel(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter Content Name"
+                  disabled={isContentUploading}
+                />
+              </div>
+
+              {/* Content File Upload Area */}
+              <div>
+                <label
+                  htmlFor="content-file"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  File *
+                </label>
+
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isContentDragOver
+                      ? "border-blue-400 bg-blue-50"
+                      : "border-gray-300 hover:border-gray-400"
+                  } ${
+                    isContentUploading
+                      ? "opacity-50 cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                  onDragOver={handleContentDragOver}
+                  onDragLeave={handleContentDragLeave}
+                  onDrop={handleContentDrop}
+                  onClick={() =>
+                    !isContentUploading && contentFileInputRef.current?.click()
+                  }
+                >
+                  {contentFile ? (
+                    <div className="space-y-2">
+                      <div className="text-green-600 font-medium">
+                        ✓ {contentFile.name}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {(contentFile.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="text-gray-500">
+                        Drag file here or click to select file
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        Supports all file types
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <input
+                  ref={contentFileInputRef}
+                  type="file"
+                  id="content-file"
+                  name="file"
+                  onChange={handleContentFileSelect}
+                  className="hidden"
+                  disabled={isContentUploading}
+                />
+              </div>
+
+              {/* Content Submit Button */}
+              <button
+                type="submit"
+                disabled={isContentUploading || !contentLabel || !contentFile}
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isContentUploading ? "Uploading..." : "Upload Content"}
+              </button>
+            </form>
+
+            {/* Content Status Message */}
+            {contentMessage && (
+              <div
+                className={`mt-4 p-3 rounded-md ${
+                  contentMessageType === "success"
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
+                {contentMessage}
+              </div>
             )}
+
+            {/* Content Library ID Display */}
+            {/* {contentLibraryId && (
+              <div className="mt-6 p-4 bg-blue-50 rounded-md border border-blue-200">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Last Upload
+                  </h3>
+                  <button
+                    onClick={clearLibraryId}
+                    className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-1 focus:ring-red-500 transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <div className="mb-3">
+                  <label className="block text-xs font-medium text-blue-700 mb-1">
+                    Content Name
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={lastContentName}
+                      readOnly
+                      className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />{" "}
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(lastContentName)
+                      }
+                      className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )} */}
           </div>
         </div>
       </div>
