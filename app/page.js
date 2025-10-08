@@ -19,9 +19,7 @@ export default function Home() {
             เข้าสู่ระบบ / สมัครสมาชิก
           </Link>
 
-          <p className="text-sm text-gray-500">
-            เริ่มต้นใช้งานระบบจัดการ Asset ของคุณ
-          </p>
+
         </div>
       </div>
     </div>
