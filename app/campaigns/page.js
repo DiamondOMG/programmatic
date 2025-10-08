@@ -20,7 +20,7 @@ function convertToUnixTime(dateTimeString) {
 export default function CombinedPage() {
   // Enterprise and Content States
   const [enterprise] = useState("A");
-  
+
   // Content Upload States (Left Side)
   const [contentLabel, setContentLabel] = useState("");
   const [contentFile, setContentFile] = useState(null);
@@ -29,13 +29,14 @@ export default function CombinedPage() {
   const [contentMessage, setContentMessage] = useState("");
   const [contentMessageType, setContentMessageType] = useState("");
   const [contentLibraryId, setContentLibraryId] = useState("");
+  const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
   const [campaignType, setCampaignType] = useState("Landscape");
   const [contentOrder, setContentOrder] = useState("1");
   const [slotOrder, setSlotOrder] = useState("1");
 
   // Campaign States (Right Side)
-  const [campaignLibraryId, setCampaignLibraryId] = useState("");
+  const [campaignContentName, setCampaignContentName] = useState("");
   const [campaignStartDateTime, setCampaignStartDateTime] = useState("");
   const [campaignEndDateTime, setCampaignEndDateTime] = useState("");
   const [campaignDuration, setCampaignDuration] = useState("15000");
@@ -67,17 +68,23 @@ export default function CombinedPage() {
 
     // Load library ID from localStorage
     const savedLibraryId = localStorage.getItem("lastLibraryId");
+    const savedContentName = localStorage.getItem("lastContentName");
     if (savedLibraryId) {
       setContentLibraryId(savedLibraryId);
-      setCampaignLibraryId(savedLibraryId);
+    }
+    if (savedContentName) {
+      setLastContentName(savedContentName);
+      setCampaignContentName(savedContentName);
     }
   }, []);
 
   // Clear library ID from localStorage
   const clearLibraryId = () => {
     localStorage.removeItem("lastLibraryId");
+    localStorage.removeItem("lastContentName");
     setContentLibraryId("");
-    setCampaignLibraryId("");
+    setLastContentName("");
+    setCampaignContentName("");
   };
 
   // Content Upload Handlers
@@ -133,8 +140,27 @@ export default function CombinedPage() {
         setContentMessage(result.message);
         setContentMessageType("success");
         setContentLibraryId(result.data.id);
-        setCampaignLibraryId(result.data.id); // Also set for campaign
+        // Save last library id and content name, and a mapping of name->id
         localStorage.setItem("lastLibraryId", result.data.id);
+        localStorage.setItem("lastContentName", contentLabel);
+        setLastContentName(contentLabel);
+        // Also update the campaign content name input so Campaign Management shows the latest content name immediately
+        setCampaignContentName(contentLabel);
+        try {
+          const existingMap = JSON.parse(
+            localStorage.getItem("contentNameToIdMap") || "{}"
+          );
+          existingMap[contentLabel] = result.data.id;
+          localStorage.setItem(
+            "contentNameToIdMap",
+            JSON.stringify(existingMap)
+          );
+        } catch (err) {
+          localStorage.setItem(
+            "contentNameToIdMap",
+            JSON.stringify({ [contentLabel]: result.data.id })
+          );
+        }
         setContentLabel("");
         setContentFile(null);
       } else {
@@ -153,7 +179,8 @@ export default function CombinedPage() {
   const handleCampaignSubmit = async (e) => {
     e.preventDefault();
 
-    if (!campaignLibraryId || !campaignDuration) {
+    // Require a content name (or id) and duration
+    if (!campaignContentName || !campaignDuration) {
       setCampaignMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
       setCampaignMessageType("error");
       return;
@@ -168,8 +195,8 @@ export default function CombinedPage() {
     // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
-    if (startDate < today) {
+
+    if (startDate.getTime() < today.getTime()) {
       setCampaignMessage("ไม่สามารถเลือกวันย้อนหลังได้");
       setCampaignMessageType("error");
       return;
@@ -187,7 +214,18 @@ export default function CombinedPage() {
 
     try {
       const formData = new FormData();
-      formData.append("libraryId", campaignLibraryId);
+      // Resolve content name to libraryId using stored map; if not found, allow raw input as id
+      let resolvedLibraryId = campaignContentName;
+      try {
+        const map = JSON.parse(
+          localStorage.getItem("contentNameToIdMap") || "{}"
+        );
+        if (map && map[campaignContentName])
+          resolvedLibraryId = map[campaignContentName];
+      } catch (err) {
+        // ignore parse errors and use campaignContentName as-is
+      }
+      formData.append("libraryId", resolvedLibraryId);
       formData.append(
         "startDateTime",
         convertToUnixTime(campaignStartDateTime)
@@ -204,7 +242,7 @@ export default function CombinedPage() {
         setCampaignMessage("Campaign updated successfully");
         setCampaignMessageType("success");
         // Reset form
-        setCampaignLibraryId("");
+        setCampaignContentName("");
         setCampaignStartDateTime("");
         setCampaignEndDateTime("");
         setCampaignDuration("");
@@ -224,7 +262,7 @@ export default function CombinedPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-          Content & Campaign Management
+          Campaign Management
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -350,20 +388,20 @@ export default function CombinedPage() {
                     Clear
                   </button>
                 </div>
-                <div>
+                <div className="mb-3">
                   <label className="block text-xs font-medium text-blue-700 mb-1">
-                    Library ID
+                    Content Name
                   </label>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
-                      value={contentLibraryId}
+                      value={lastContentName}
                       readOnly
                       className="flex-1 px-3 py-2 text-sm bg-white border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    />
+                    />{" "}
                     <button
                       onClick={() =>
-                        navigator.clipboard.writeText(contentLibraryId)
+                        navigator.clipboard.writeText(lastContentName)
                       }
                       className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                     >
@@ -382,24 +420,42 @@ export default function CombinedPage() {
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
-              {/* Campaign Library ID */}
               <div>
                 <label
-                  htmlFor="campaign-library-id"
+                  htmlFor="campaign-content-name"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Content ID *
+                  Content Name
                 </label>
                 <input
                   type="text"
-                  id="campaign-library-id"
-                  name="libraryId"
-                  value={campaignLibraryId}
-                  onChange={(e) => setCampaignLibraryId(e.target.value)}
+                  id="campaign-content-name"
+                  name="contentName"
+                  value={campaignContentName}
+                  onChange={(e) => setCampaignContentName(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter Content ID"
+                  placeholder="Enter Content Name "
                   disabled={isCampaignSubmitting}
                 />
+              </div>
+              {/* Campaign Type */}
+              <div>
+                <label
+                  htmlFor="campaign-type"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Type Campaign
+                </label>
+                <select
+                  id="campaign-type"
+                  value={campaignType}
+                  onChange={(e) => setCampaignType(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isCampaignSubmitting}
+                >
+                  <option value="Portrait">Kiosk</option>
+                  <option value="Landscape">TV Signage</option>
+                </select>
               </div>
 
               {/* Campaign Start Date Time */}
@@ -419,7 +475,9 @@ export default function CombinedPage() {
                       ? campaignStartDateTime
                       : formatDateForInput(new Date())
                   }
-                  min={formatDateForInput(new Date())}
+                  min={formatDateForInput(
+                    new Date(new Date().setHours(0, 0, 0, 0))
+                  )}
                   onChange={(e) => setCampaignStartDateTime(e.target.value)}
                 />
               </div>
@@ -463,25 +521,6 @@ export default function CombinedPage() {
                       {option.label}
                     </option>
                   ))}
-                </select>
-              </div>
-              {/* Campaign Type */}
-              <div>
-                <label
-                  htmlFor="campaign-type"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Type Campaign
-                </label>
-                <select
-                  id="campaign-type"
-                  value={campaignType}
-                  onChange={(e) => setCampaignType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isCampaignSubmitting}
-                >
-                  <option value="Portrait">Portrait</option>
-                  <option value="Landscape">Landscape</option>
                 </select>
               </div>
 
@@ -536,7 +575,7 @@ export default function CombinedPage() {
                 type="submit"
                 disabled={
                   isCampaignSubmitting ||
-                  !campaignLibraryId ||
+                  !campaignContentName ||
                   !campaignDuration
                 }
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
