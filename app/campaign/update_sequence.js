@@ -23,7 +23,19 @@ export async function updateSequence(formData) {
     const slotOrder = formData.get("slotOrder") || "1";
 
     // 🔹 แปลง type เป็น prefix id
-    const prefix = type === "Portrait" ? "13DA9DDD7E8E70" : "13653C81488E4C";
+    const prefixMap = {
+      Kopiko: "138D8A7D15C077",
+      Milo: "135CF8B9EB1B6B",
+      Foremost: "13CE1567F24FD7",
+      Leo : "131E085C8F4350",
+      Chang : "13E8C827E26998",
+      Pepsi : "132EEA69BD9BFB",
+      Nivea : "13AC3F6C4AA7BE",
+      Coke : "133E417CC6937B",
+    };
+
+    // ดึง prefix ตาม type ถ้าไม่เจอใช้ค่า default
+    const prefix = prefixMap[type] || "13DA9DDD7E8E70";
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
     const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${prefix}/${contentOrder}/${slotOrder}`;

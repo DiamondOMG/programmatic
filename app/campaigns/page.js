@@ -32,7 +32,7 @@ export default function CombinedPage() {
   const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
   const [campaignType, setCampaignType] = useState("Landscape");
-  const [contentOrder, setContentOrder] = useState("1");
+  const [contentOrder, setContentOrder] = useState("2");
   const [slotOrder, setSlotOrder] = useState("1");
 
   // Campaign States (Right Side)
@@ -301,10 +301,10 @@ export default function CombinedPage() {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Right Side - Campaign Management */}
+          {/* Campaign Management */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Campaign Management
+              Campaigns
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
@@ -332,7 +332,7 @@ export default function CombinedPage() {
                   htmlFor="campaign-type"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Type Campaign
+                  Campaign Name *
                 </label>
                 <select
                   id="campaign-type"
@@ -341,8 +341,14 @@ export default function CombinedPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isCampaignSubmitting}
                 >
-                  <option value="Portrait">Kiosk</option>
-                  <option value="Landscape">TV Signage</option>
+                  <option value="Coke">Coke</option>
+                  <option value="Nivea">Nivea</option>
+                  <option value="Pepsi">Pepsi</option>
+                  <option value="Chang">Chang</option>
+                  <option value="Leo">Leo</option>
+                  <option value="Foremost ">Foremost</option>
+                  <option value="Milo  ">Milo</option>
+                  <option value="Kopiko  ">Kopiko</option>
                 </select>
               </div>
 
@@ -413,7 +419,7 @@ export default function CombinedPage() {
               </div>
 
               {/* Content Order */}
-              <div>
+              {/* <div>
                 <label
                   htmlFor="content-order"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -433,10 +439,10 @@ export default function CombinedPage() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Slot Order */}
-              <div>
+              {/* <div>
                 <label
                   htmlFor="slot-order"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -456,7 +462,7 @@ export default function CombinedPage() {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Campaign Submit Button */}
               {/* <button
@@ -485,13 +491,17 @@ export default function CombinedPage() {
               </div>
             )} */}
           </div>
-          {/* Left Side - Content Upload */}
+          {/* Content Upload */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
               Add Content
             </h2>
 
-            <form onSubmit={handleContentSubmit} className="space-y-4">
+            <form
+              id="uploadForm"
+              onSubmit={handleContentSubmit}
+              className="space-y-4"
+            >
               {/* Content Label Input */}
               <div>
                 <label
@@ -569,29 +579,7 @@ export default function CombinedPage() {
                   disabled={isContentUploading}
                 />
               </div>
-
-              {/* Content Submit Button */}
-              <button
-                type="submit"
-                disabled={isContentUploading || !contentLabel || !contentFile}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isContentUploading ? "Uploading..." : "Upload Content"}
-              </button>
             </form>
-
-            {/* Content Status Message */}
-            {contentMessage && (
-              <div
-                className={`mt-4 p-3 rounded-md ${
-                  contentMessageType === "success"
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                {contentMessage}
-              </div>
-            )}
 
             {/* Content Library ID Display */}
             {/* {contentLibraryId && (
@@ -632,6 +620,30 @@ export default function CombinedPage() {
             )} */}
           </div>
         </div>
+        <button
+          type="submit"
+          form="uploadForm"
+          disabled={isContentUploading || !contentLabel || !contentFile}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md 
+             hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
+             focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
+             transition-colors"
+        >
+          {isContentUploading ? "Uploading..." : "Upload Content"}
+        </button>
+
+        {/* Content Status Message */}
+        {contentMessage && (
+          <div
+            className={`mt-4 p-3 rounded-md ${
+              contentMessageType === "success"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
+            }`}
+          >
+            {contentMessage}
+          </div>
+        )}
       </div>
     </div>
   );
