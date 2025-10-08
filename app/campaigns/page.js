@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { uploadAsset } from "../content/upload_library";
 import { updateSequence } from "../campaign/update_sequence";
+import signage_form from "../make_data/signage_form";
 
 // ฟังก์ชันแปลง datetime-local เป็น UnixTime UTC (ลบ 7 ชมสำหรับไทย timezone)
 function convertToUnixTime(dateTimeString) {
@@ -31,8 +32,8 @@ export default function CombinedPage() {
   const [contentLibraryId, setContentLibraryId] = useState("");
   const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
-  const [campaignType, setCampaignType] = useState("Landscape");
-  const [contentOrder, setContentOrder] = useState("2");
+  const [signagForm, setSignagForm] = useState("");
+  const [contentOrder, setContentOrder] = useState("1");
   const [slotOrder, setSlotOrder] = useState("1");
 
   // Campaign States (Right Side)
@@ -234,7 +235,7 @@ export default function CombinedPage() {
       );
       formData.append("endDateTime", convertToUnixTime(campaignEndDateTime));
       formData.append("duration", campaignDuration);
-      formData.append("type", campaignType);
+      formData.append("type", signagForm);
       formData.append("contentOrder", contentOrder);
       formData.append("slotOrder", slotOrder);
 
@@ -274,7 +275,7 @@ export default function CombinedPage() {
         convertToUnixTime(campaignEndDateTime || "")
       );
       formData.append("duration", campaignDuration);
-      formData.append("type", campaignType);
+      formData.append("type", signagForm);
       formData.append("contentOrder", contentOrder);
       formData.append("slotOrder", slotOrder);
 
@@ -308,12 +309,12 @@ export default function CombinedPage() {
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
-              {/* <div>
+              <div>
                 <label
                   htmlFor="campaign-content-name"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Content Name
+                  Campaign Name *
                 </label>
                 <input
                   type="text"
@@ -325,30 +326,27 @@ export default function CombinedPage() {
                   placeholder="Enter Content Name "
                   disabled={isCampaignSubmitting}
                 />
-              </div> */}
+              </div>
               {/* Campaign Type */}
               <div>
                 <label
-                  htmlFor="campaign-type"
+                  htmlFor="signage-form"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Campaign Name *
+                  Signage Form *
                 </label>
                 <select
-                  id="campaign-type"
-                  value={campaignType}
-                  onChange={(e) => setCampaignType(e.target.value)}
+                  id="signage-form"
+                  value={signagForm}
+                  onChange={(e) => setSignagForm(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isCampaignSubmitting}
                 >
-                  <option value="Coke">Coke</option>
-                  <option value="Nivea">Nivea</option>
-                  <option value="Pepsi">Pepsi</option>
-                  <option value="Chang">Chang</option>
-                  <option value="Leo">Leo</option>
-                  <option value="Foremost ">Foremost</option>
-                  <option value="Milo  ">Milo</option>
-                  <option value="Kopiko  ">Kopiko</option>
+                  {Object.keys(signage_form).map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -624,7 +622,7 @@ export default function CombinedPage() {
           type="submit"
           form="uploadForm"
           disabled={isContentUploading || !contentLabel || !contentFile}
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md 
+          className="w-full bg-blue-600 text-white py-2 my-4 px-4 rounded-md 
              hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
              transition-colors"

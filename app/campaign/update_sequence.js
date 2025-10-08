@@ -19,7 +19,7 @@ export async function updateSequence(formData) {
 
     // 🔹 รับค่าจาก dropdown ใหม่
     const type = formData.get("type") || "Landscape";
-    const contentOrder = formData.get("contentOrder") || "2";
+    const contentOrder = formData.get("contentOrder") || "1";
     const slotOrder = formData.get("slotOrder") || "1";
 
     // 🔹 แปลง type เป็น prefix id
@@ -65,7 +65,7 @@ export async function updateSequence(formData) {
     const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
       "base64"
     );
-
+    console.log("requestBody", requestBody, SEQUENCE_API_URL);
     // 🔹 ส่งคำขอ PUT ไปยัง API
     const response = await fetch(SEQUENCE_API_URL, {
       method: "PUT",

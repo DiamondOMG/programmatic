@@ -125,7 +125,6 @@ async function createLibraryRecord(id, pendingId) {
   if (!userSuccess || !user) {
     throw new Error("User not authenticated");
   }
-  console.log(user.id);
 
   // 👈 แก้ตรงนี้: AWAIT การสร้าง Client
   const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
