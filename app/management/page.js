@@ -18,6 +18,9 @@ function convertToUnixTime(dateTimeString) {
 }
 
 export default function CombinedPage() {
+  // Enterprise and Content States
+  const [enterprise] = useState("A");
+  
   // Content Upload States (Left Side)
   const [contentLabel, setContentLabel] = useState("");
   const [contentFile, setContentFile] = useState(null);
@@ -35,14 +38,14 @@ export default function CombinedPage() {
   const [campaignLibraryId, setCampaignLibraryId] = useState("");
   const [campaignStartDateTime, setCampaignStartDateTime] = useState("");
   const [campaignEndDateTime, setCampaignEndDateTime] = useState("");
-  const [campaignDuration, setCampaignDuration] = useState("");
+  const [campaignDuration, setCampaignDuration] = useState("15000");
   const [isCampaignSubmitting, setIsCampaignSubmitting] = useState(false);
   const [campaignMessage, setCampaignMessage] = useState("");
   const [campaignMessageType, setCampaignMessageType] = useState("");
 
   const durationOptions = [
-    { value: "900000", label: "15s" },
-    { value: "1800000", label: "30s" },
+    { value: "15000", label: "15s" },
+    { value: "30000", label: "30s" },
   ];
 
   // Format date to yyyy-MM-ddTHH:mm for input[type="datetime-local"]
@@ -55,11 +58,12 @@ export default function CombinedPage() {
     )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  // Set default start date to current time when component mounts
+  // Set default start date to 00:00 AM of current day when component mounts
   useEffect(() => {
-    // Set current time as default start date
-    const now = new Date();
-    setCampaignStartDateTime(formatDateForInput(now));
+    // Set to 00:00 AM of current day
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    setCampaignStartDateTime(formatDateForInput(today));
 
     // Load library ID from localStorage
     const savedLibraryId = localStorage.getItem("lastLibraryId");
@@ -118,7 +122,9 @@ export default function CombinedPage() {
 
     try {
       const formData = new FormData();
-      formData.append("label", contentLabel);
+      // Add ENTERPRISE A - prefix to the label
+      const fileNameWithEnterprise = `ENTERPRISE ${enterprise} - ${contentLabel}`;
+      formData.append("label", fileNameWithEnterprise);
       formData.append("file", contentFile);
 
       const result = await uploadAsset(formData);
@@ -159,9 +165,12 @@ export default function CombinedPage() {
       : now;
     const endDate = campaignEndDateTime ? new Date(campaignEndDateTime) : null;
 
-    // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าปัจจุบัน
-    if (startDate < now) {
-      setCampaignMessage("ไม่สามารถเลือกเวลาย้อนหลังได้");
+    // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (startDate < today) {
+      setCampaignMessage("ไม่สามารถเลือกวันย้อนหลังได้");
       setCampaignMessageType("error");
       return;
     }
@@ -449,7 +458,6 @@ export default function CombinedPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isCampaignSubmitting}
                 >
-                  <option value="">Select Duration</option>
                   {durationOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}

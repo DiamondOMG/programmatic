@@ -80,7 +80,7 @@ export default function Dashboard() {
 
             <div>
               <h2 className="text-lg font-semibold text-gray-800">เมนู</h2>
-              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <a
                   href="/content"
                   className="p-4 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors block"
@@ -94,6 +94,13 @@ export default function Dashboard() {
                   className="p-4 bg-green-50 rounded-md hover:bg-green-100 transition-colors block"
                 >
                   <h3 className="font-medium text-green-900">Update Campaign</h3>
+          
+                </a>
+                <a
+                  href="/management"
+                  className="p-4 bg-red-50 rounded-md hover:bg-red-100 transition-colors block"
+                >
+                  <h3 className="font-medium text-red-900">Management</h3>
           
                 </a>
               </div>

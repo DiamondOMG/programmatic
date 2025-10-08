@@ -23,13 +23,13 @@ export default function Navbar() {
 
           <div className="flex items-center space-x-8">
             <Link
-              href="/combined"
+              href="/management"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname === "/combined"
+                pathname === "/management"
                   ? "bg-blue-100 text-blue-700"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
             >
-              Combined
+              Management
             </Link>
 
             <Link
