@@ -133,23 +133,11 @@ export async function registerUser(formData) {
 
       if (insertError) {
         console.error("Error inserting user data:", insertError);
+        if (insertError.code === "23505") {
+          throw new Error("อีเมลนี้มีผู้ใช้แล้ว กรุณาใช้อีเมลอื่น");
+        }
+        throw insertError; // เพิ่มบรรทัดนี้เพื่อให้ error ถูกส่งกลับ
       }
-
-      const cookieStore = await cookies();
-
-      // ตั้งค่า HttpOnly cookies
-      cookieStore.set("access_token", data.session.access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-      });
-      cookieStore.set("refresh_token", data.session.refresh_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/",
-      });
     }
 
     return {
