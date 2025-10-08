@@ -4,9 +4,9 @@ export default function Home() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-md w-full text-center space-y-8 p-8">
-        <img src="actmedia_main.png" alt="" />
+        <img src="actmedia.png" alt="" />
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Digital Ads CMS
           </h1>
         </div>
