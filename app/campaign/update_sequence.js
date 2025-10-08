@@ -18,24 +18,13 @@ export async function updateSequence(formData) {
     const duration = formData.get("duration");
 
     // 🔹 รับค่าจาก dropdown ใหม่
-    const type = formData.get("type") || "Landscape";
+    const signagForm = formData.get("signagForm") || "displayAspectRatio == \"1920x1080\"";
     const contentOrder = formData.get("contentOrder") || "1";
     const slotOrder = formData.get("slotOrder") || "1";
-
-    // 🔹 แปลง type เป็น prefix id
-    const prefixMap = {
-      Kopiko: "138D8A7D15C077",
-      Milo: "135CF8B9EB1B6B",
-      Foremost: "13CE1567F24FD7",
-      Leo : "131E085C8F4350",
-      Chang : "13E8C827E26998",
-      Pepsi : "132EEA69BD9BFB",
-      Nivea : "13AC3F6C4AA7BE",
-      Coke : "133E417CC6937B",
-    };
+    const label = formData.get("sequenceLabel") || "";
 
     // ดึง prefix ตาม type ถ้าไม่เจอใช้ค่า default
-    const prefix = prefixMap[type] || "13DA9DDD7E8E70";
+    const prefix = "13DA9DDD7E8E70";
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
     const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${prefix}/${contentOrder}/${slotOrder}`;
@@ -53,6 +42,8 @@ export async function updateSequence(formData) {
       id: libraryId,
       data: {
         modifiedMillis: generateModifiedMillis(),
+        condition: signagForm,
+        label:label
       },
     };
 
@@ -68,7 +59,7 @@ export async function updateSequence(formData) {
     console.log("requestBody", requestBody, SEQUENCE_API_URL);
     // 🔹 ส่งคำขอ PUT ไปยัง API
     const response = await fetch(SEQUENCE_API_URL, {
-      method: "PUT",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Basic ${auth}`,

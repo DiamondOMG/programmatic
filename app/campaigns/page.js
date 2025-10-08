@@ -32,7 +32,7 @@ export default function CombinedPage() {
   const [contentLibraryId, setContentLibraryId] = useState("");
   const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
-  const [signagForm, setSignagForm] = useState("");
+  const [signagForm, setSignagForm] = useState("displayAspectRatio == \"1920x1080\"");
   const [contentOrder, setContentOrder] = useState("1");
   const [slotOrder, setSlotOrder] = useState("1");
 
@@ -44,6 +44,7 @@ export default function CombinedPage() {
   const [isCampaignSubmitting, setIsCampaignSubmitting] = useState(false);
   const [campaignMessage, setCampaignMessage] = useState("");
   const [campaignMessageType, setCampaignMessageType] = useState("");
+  const [sequenceLabel, setSequenceLabel] = useState("");
 
   const durationOptions = [
     { value: "15000", label: "15s" },
@@ -235,7 +236,6 @@ export default function CombinedPage() {
       );
       formData.append("endDateTime", convertToUnixTime(campaignEndDateTime));
       formData.append("duration", campaignDuration);
-      formData.append("type", signagForm);
       formData.append("contentOrder", contentOrder);
       formData.append("slotOrder", slotOrder);
 
@@ -278,6 +278,8 @@ export default function CombinedPage() {
       formData.append("type", signagForm);
       formData.append("contentOrder", contentOrder);
       formData.append("slotOrder", slotOrder);
+      formData.append("sequenceLabel", sequenceLabel);
+      formData.append("signagForm", signagForm);
 
       const result = await updateSequence(formData);
 
@@ -320,8 +322,8 @@ export default function CombinedPage() {
                   type="text"
                   id="campaign-content-name"
                   name="contentName"
-                  value={campaignContentName}
-                  onChange={(e) => setCampaignContentName(e.target.value)}
+                  value={sequenceLabel}
+                  onChange={(e) => setSequenceLabel(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter Content Name "
                   disabled={isCampaignSubmitting}
@@ -343,7 +345,7 @@ export default function CombinedPage() {
                   disabled={isCampaignSubmitting}
                 >
                   {Object.keys(signage_form).map((option) => (
-                    <option key={option} value={option}>
+                    <option key={option} value={signage_form[option]}>
                       {option}
                     </option>
                   ))}
@@ -622,7 +624,7 @@ export default function CombinedPage() {
           type="submit"
           form="uploadForm"
           disabled={isContentUploading || !contentLabel || !contentFile}
-          className="w-full bg-blue-600 text-white py-2 my-4 px-4 rounded-md 
+          className="w-full bg-blue-600 text-white py-2 mt-4 px-4 rounded-md 
              hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
              transition-colors"
