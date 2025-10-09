@@ -85,13 +85,13 @@ export default function CombinedPage() {
   }, []);
 
   // Clear library ID from localStorage
-  const clearLibraryId = () => {
-    localStorage.removeItem("lastLibraryId");
-    localStorage.removeItem("lastContentName");
-    setContentLibraryId("");
-    setLastContentName("");
-    setCampaignContentName("");
-  };
+  // const clearLibraryId = () => {
+  //   localStorage.removeItem("lastLibraryId");
+  //   localStorage.removeItem("lastContentName");
+  //   setContentLibraryId("");
+  //   setLastContentName("");
+  //   setCampaignContentName("");
+  // };
 
   // Content Upload Handlers
   const handleContentDragOver = (e) => {
@@ -184,81 +184,81 @@ export default function CombinedPage() {
   };
 
   // Campaign Handlers
-  const handleCampaignSubmit = async (e) => {
-    e.preventDefault();
+  // const handleCampaignSubmit = async (e) => {
+  //   e.preventDefault();
 
-    // Require a content name (or id) and duration
-    if (!campaignContentName || !seq_duration) {
-      setCampaignMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
-      setCampaignMessageType("error");
-      return;
-    }
+  //   // Require a content name (or id) and duration
+  //   if (!campaignContentName || !seq_duration) {
+  //     setCampaignMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
+  //     setCampaignMessageType("error");
+  //     return;
+  //   }
 
-    const now = new Date();
-    const startDate = seq_startdate ? new Date(seq_startdate) : now;
-    const endDate = seq_enddate ? new Date(seq_enddate) : null;
+  //   const now = new Date();
+  //   const startDate = seq_startdate ? new Date(seq_startdate) : now;
+  //   const endDate = seq_enddate ? new Date(seq_enddate) : null;
 
-    // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  //   // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
+  //   const today = new Date();
+  //   today.setHours(0, 0, 0, 0);
 
-    if (startDate.getTime() < today.getTime()) {
-      setCampaignMessage("ไม่สามารถเลือกวันย้อนหลังได้");
-      setCampaignMessageType("error");
-      return;
-    }
+  //   if (startDate.getTime() < today.getTime()) {
+  //     setCampaignMessage("ไม่สามารถเลือกวันย้อนหลังได้");
+  //     setCampaignMessageType("error");
+  //     return;
+  //   }
 
-    // ตรวจสอบว่า EndDate ต้องมากกว่า StartDate
-    if (endDate && endDate <= startDate) {
-      setCampaignMessage("วันสิ้นสุดต้องมากกว่าวันเริ่มต้น");
-      setCampaignMessageType("error");
-      return;
-    }
+  //   // ตรวจสอบว่า EndDate ต้องมากกว่า StartDate
+  //   if (endDate && endDate <= startDate) {
+  //     setCampaignMessage("วันสิ้นสุดต้องมากกว่าวันเริ่มต้น");
+  //     setCampaignMessageType("error");
+  //     return;
+  //   }
 
-    setIsCampaignSubmitting(true);
-    setCampaignMessage("");
+  //   setIsCampaignSubmitting(true);
+  //   setCampaignMessage("");
 
-    try {
-      const formData = new FormData();
-      // Resolve content name to libraryId using stored map; if not found, allow raw input as id
-      let resolvedLibraryId = campaignContentName;
-      try {
-        const map = JSON.parse(
-          localStorage.getItem("contentNameToIdMap") || "{}"
-        );
-        if (map && map[campaignContentName])
-          resolvedLibraryId = map[campaignContentName];
-      } catch (err) {
-        // ignore parse errors and use campaignContentName as-is
-      }
-      formData.append("libraryId", resolvedLibraryId);
-      formData.append("startDateTime", convertToUnixTime(seq_startdate));
-      formData.append("endDateTime", convertToUnixTime(seq_enddate));
-      formData.append("duration", seq_duration);
-      formData.append("seq_slot", seq_slot);
-      formData.append("seq_item", seq_item);
+  //   try {
+  //     const formData = new FormData();
+  //     // Resolve content name to libraryId using stored map; if not found, allow raw input as id
+  //     let resolvedLibraryId = campaignContentName;
+  //     try {
+  //       const map = JSON.parse(
+  //         localStorage.getItem("contentNameToIdMap") || "{}"
+  //       );
+  //       if (map && map[campaignContentName])
+  //         resolvedLibraryId = map[campaignContentName];
+  //     } catch (err) {
+  //       // ignore parse errors and use campaignContentName as-is
+  //     }
+  //     formData.append("libraryId", resolvedLibraryId);
+  //     formData.append("startDateTime", convertToUnixTime(seq_startdate));
+  //     formData.append("endDateTime", convertToUnixTime(seq_enddate));
+  //     formData.append("duration", seq_duration);
+  //     formData.append("seq_slot", seq_slot);
+  //     formData.append("seq_item", seq_item);
 
-      const result = await updateSequence(formData);
+  //     const result = await updateSequence(formData);
 
-      if (result.success) {
-        setCampaignMessage("Campaign updated successfully");
-        setCampaignMessageType("success");
-        // Reset form
-        setCampaignContentName("");
-        setseq_startdate("");
-        setseq_enddate("");
-        setseq_duration("");
-      } else {
-        setCampaignMessage(result.error);
-        setCampaignMessageType("error");
-      }
-    } catch (error) {
-      setCampaignMessage("Error updating campaign");
-      setCampaignMessageType("error");
-    } finally {
-      setIsCampaignSubmitting(false);
-    }
-  };
+  //     if (result.success) {
+  //       setCampaignMessage("Campaign updated successfully");
+  //       setCampaignMessageType("success");
+  //       // Reset form
+  //       setCampaignContentName("");
+  //       setseq_startdate("");
+  //       setseq_enddate("");
+  //       setseq_duration("");
+  //     } else {
+  //       setCampaignMessage(result.error);
+  //       setCampaignMessageType("error");
+  //     }
+  //   } catch (error) {
+  //     setCampaignMessage("Error updating campaign");
+  //     setCampaignMessageType("error");
+  //   } finally {
+  //     setIsCampaignSubmitting(false);
+  //   }
+  // };
 
   // ฟังก์ชัน trigger อัปเดตแคมเปญอัตโนมัติหลัง upload สำเร็จ
   const triggerAutoCampaignUpdate = async (libraryId, contentName) => {
