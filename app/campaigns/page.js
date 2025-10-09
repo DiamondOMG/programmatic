@@ -307,28 +307,6 @@ export default function CombinedPage() {
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
-              {/* Campaign Type */}
-              <div>
-                <label
-                  htmlFor="signage-form"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Slot *
-                </label>
-                <select
-                  id="signage-form"
-                  value={seq_id}
-                  onChange={(e) => setseq_id(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isCampaignSubmitting}
-                >
-                  {Object.keys(seq_id_data).map((option) => (
-                    <option key={option} value={seq_id_data[option]}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div>
                 <label
                   htmlFor="campaign-content-name"
@@ -353,7 +331,7 @@ export default function CombinedPage() {
                   htmlFor="signage-form"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Signage Form *
+                  Format *
                 </label>
                 <select
                   id="signage-form"
@@ -369,7 +347,30 @@ export default function CombinedPage() {
                   ))}
                 </select>
               </div>
-
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Spot *
+                </label>
+                <div className="flex flex-wrap gap-4">
+                  {Object.keys(seq_id_data).map((option) => (
+                    <label
+                      key={option}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="signage-form"
+                        value={seq_id_data[option]}
+                        checked={seq_id === seq_id_data[option]}
+                        onChange={(e) => setseq_id(e.target.value)}
+                        disabled={isCampaignSubmitting}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-gray-700">{option}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
               {/* Campaign Start Date Time */}
               <div>
                 <label

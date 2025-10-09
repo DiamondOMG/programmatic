@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  /* นี่คือค่า Light Mode (ขาว) ที่คุณต้องการให้เป็นค่าเริ่มต้น */
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,12 +13,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* *** ลบโค้ด @media (prefers-color-scheme: dark) ส่วนนี้ทิ้งไป ***
+   ถ้าคุณลบส่วนนี้ออก ระบบจะใช้ค่าเริ่มต้น (Light Mode) เสมอ 
+*/
 
 body {
   background: var(--background);
