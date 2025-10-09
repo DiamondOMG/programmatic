@@ -305,8 +305,7 @@ export default function CombinedPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
               Campaigns
             </h2>
-
-            <form onSubmit={handleCampaignSubmit} className="space-y-4">
+            <form className="space-y-4">
               <div>
                 <label
                   htmlFor="campaign-content-name"
