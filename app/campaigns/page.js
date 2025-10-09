@@ -562,7 +562,7 @@ export default function CombinedPage() {
                         Drag file here or click to select file
                       </div>
                       <div className="text-sm text-gray-400">
-                        Supports all file types
+                        Supports only .mp4 / .jpg / .png files and Name English only
                       </div>
                     </div>
                   )}
