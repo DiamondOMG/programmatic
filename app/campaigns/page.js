@@ -32,19 +32,19 @@ export default function CombinedPage() {
   const [contentLibraryId, setContentLibraryId] = useState("");
   const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
-  const [signagForm, setSignagForm] = useState("displayAspectRatio == \"1920x1080\"");
-  const [contentOrder, setContentOrder] = useState("1");
-  const [slotOrder, setSlotOrder] = useState("1");
+  const [seq_condition, setseq_condition] = useState("displayAspectRatio == \"1920x1080\"");
+  const [seq_slot, setseq_slot] = useState("1");
+  const [seq_item, setseq_item] = useState("1");
 
   // Campaign States (Right Side)
   const [campaignContentName, setCampaignContentName] = useState("");
-  const [campaignStartDateTime, setCampaignStartDateTime] = useState("");
-  const [campaignEndDateTime, setCampaignEndDateTime] = useState("");
-  const [campaignDuration, setCampaignDuration] = useState("15000");
+  const [seq_startdate, setseq_startdate] = useState("");
+  const [seq_enddate, setseq_enddate] = useState("");
+  const [seq_duration, setseq_duration] = useState("15000");
   const [isCampaignSubmitting, setIsCampaignSubmitting] = useState(false);
   const [campaignMessage, setCampaignMessage] = useState("");
   const [campaignMessageType, setCampaignMessageType] = useState("");
-  const [sequenceLabel, setSequenceLabel] = useState("");
+  const [seq_label, setseq_label] = useState("");
 
   const durationOptions = [
     { value: "15000", label: "15s" },
@@ -66,7 +66,7 @@ export default function CombinedPage() {
     // Set to 00:00 AM of current day
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    setCampaignStartDateTime(formatDateForInput(today));
+    setseq_startdate(formatDateForInput(today));
 
     // Load library ID from localStorage
     const savedLibraryId = localStorage.getItem("lastLibraryId");
@@ -184,17 +184,17 @@ export default function CombinedPage() {
     e.preventDefault();
 
     // Require a content name (or id) and duration
-    if (!campaignContentName || !campaignDuration) {
+    if (!campaignContentName || !seq_duration) {
       setCampaignMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
       setCampaignMessageType("error");
       return;
     }
 
     const now = new Date();
-    const startDate = campaignStartDateTime
-      ? new Date(campaignStartDateTime)
+    const startDate = seq_startdate
+      ? new Date(seq_startdate)
       : now;
-    const endDate = campaignEndDateTime ? new Date(campaignEndDateTime) : null;
+    const endDate = seq_enddate ? new Date(seq_enddate) : null;
 
     // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
     const today = new Date();
@@ -232,12 +232,12 @@ export default function CombinedPage() {
       formData.append("libraryId", resolvedLibraryId);
       formData.append(
         "startDateTime",
-        convertToUnixTime(campaignStartDateTime)
+        convertToUnixTime(seq_startdate)
       );
-      formData.append("endDateTime", convertToUnixTime(campaignEndDateTime));
-      formData.append("duration", campaignDuration);
-      formData.append("contentOrder", contentOrder);
-      formData.append("slotOrder", slotOrder);
+      formData.append("endDateTime", convertToUnixTime(seq_enddate));
+      formData.append("duration", seq_duration);
+      formData.append("seq_slot", seq_slot);
+      formData.append("seq_item", seq_item);
 
       const result = await updateSequence(formData);
 
@@ -246,9 +246,9 @@ export default function CombinedPage() {
         setCampaignMessageType("success");
         // Reset form
         setCampaignContentName("");
-        setCampaignStartDateTime("");
-        setCampaignEndDateTime("");
-        setCampaignDuration("");
+        setseq_startdate("");
+        setseq_enddate("");
+        setseq_duration("");
       } else {
         setCampaignMessage(result.error);
         setCampaignMessageType("error");
@@ -267,19 +267,18 @@ export default function CombinedPage() {
       const formData = new FormData();
       formData.append("libraryId", libraryId);
       formData.append(
-        "startDateTime",
-        convertToUnixTime(campaignStartDateTime || new Date())
+        "seq_startdate",
+        convertToUnixTime(seq_startdate || new Date())
       );
       formData.append(
-        "endDateTime",
-        convertToUnixTime(campaignEndDateTime || "")
+        "seq_enddate",
+        convertToUnixTime(seq_enddate || "")
       );
-      formData.append("duration", campaignDuration);
-      formData.append("type", signagForm);
-      formData.append("contentOrder", contentOrder);
-      formData.append("slotOrder", slotOrder);
-      formData.append("sequenceLabel", sequenceLabel);
-      formData.append("signagForm", signagForm);
+      formData.append("seq_duration", seq_duration);
+      formData.append("seq_slot", seq_slot);
+      formData.append("seq_item", seq_item);
+      formData.append("seq_label", seq_label);
+      formData.append("seq_condition", seq_condition);
 
       const result = await updateSequence(formData);
 
@@ -322,8 +321,8 @@ export default function CombinedPage() {
                   type="text"
                   id="campaign-content-name"
                   name="contentName"
-                  value={sequenceLabel}
-                  onChange={(e) => setSequenceLabel(e.target.value)}
+                  value={seq_label}
+                  onChange={(e) => setseq_label(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter Content Name "
                   disabled={isCampaignSubmitting}
@@ -339,8 +338,8 @@ export default function CombinedPage() {
                 </label>
                 <select
                   id="signage-form"
-                  value={signagForm}
-                  onChange={(e) => setSignagForm(e.target.value)}
+                  value={seq_condition}
+                  onChange={(e) => setseq_condition(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isCampaignSubmitting}
                 >
@@ -365,14 +364,14 @@ export default function CombinedPage() {
                   id="startDateTime"
                   className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                   value={
-                    campaignStartDateTime
-                      ? campaignStartDateTime
+                    seq_startdate
+                      ? seq_startdate
                       : formatDateForInput(new Date())
                   }
                   min={formatDateForInput(
                     new Date(new Date().setHours(0, 0, 0, 0))
                   )}
-                  onChange={(e) => setCampaignStartDateTime(e.target.value)}
+                  onChange={(e) => setseq_startdate(e.target.value)}
                 />
               </div>
 
@@ -388,13 +387,13 @@ export default function CombinedPage() {
                   type="datetime-local"
                   id="endDateTime"
                   className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                  value={campaignEndDateTime}
+                  value={seq_enddate}
                   min={
-                    campaignStartDateTime
-                      ? campaignStartDateTime
+                    seq_startdate
+                      ? seq_startdate
                       : formatDateForInput(new Date())
                   }
-                  onChange={(e) => setCampaignEndDateTime(e.target.value)}
+                  onChange={(e) => setseq_enddate(e.target.value)}
                 />
                 <label
                   htmlFor="campaign-duration"
@@ -405,8 +404,8 @@ export default function CombinedPage() {
                 <select
                   id="campaign-duration"
                   name="duration"
-                  value={campaignDuration}
-                  onChange={(e) => setCampaignDuration(e.target.value)}
+                  value={seq_duration}
+                  onChange={(e) => setseq_duration(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   disabled={isCampaignSubmitting}
                 >
@@ -428,8 +427,8 @@ export default function CombinedPage() {
                 </label>
                 <select
                   id="content-order"
-                  value={contentOrder}
-                  onChange={(e) => setContentOrder(e.target.value)}
+                  value={seq_slot}
+                  onChange={(e) => setseq_slot(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isCampaignSubmitting}
                 >
@@ -451,8 +450,8 @@ export default function CombinedPage() {
                 </label>
                 <select
                   id="slot-order"
-                  value={slotOrder}
-                  onChange={(e) => setSlotOrder(e.target.value)}
+                  value={seq_item}
+                  onChange={(e) => setseq_item(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isCampaignSubmitting}
                 >
@@ -470,7 +469,7 @@ export default function CombinedPage() {
                 disabled={
                   isCampaignSubmitting ||
                   !campaignContentName ||
-                  !campaignDuration
+                  !seq_duration
                 }
                 className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >

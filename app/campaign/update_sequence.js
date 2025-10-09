@@ -13,21 +13,21 @@ function generateModifiedMillis() {
 export async function updateSequence(formData) {
   try {
     const libraryId = formData.get("libraryId");
-    const startDateTime = formData.get("startDateTime"); // รับเป็น UnixTime UTC แล้ว
-    const endDateTime = formData.get("endDateTime"); // รับเป็น UnixTime UTC แล้ว
-    const duration = formData.get("duration");
+    const startDateTime = formData.get("seq_startdate"); // รับเป็น UnixTime UTC แล้ว
+    const endDateTime = formData.get("seq_enddate"); // รับเป็น UnixTime UTC แล้ว
+    const duration = formData.get("seq_duration");
 
     // 🔹 รับค่าจาก dropdown ใหม่
-    const signagForm = formData.get("signagForm") || "displayAspectRatio == \"1920x1080\"";
-    const contentOrder = formData.get("contentOrder") || "1";
-    const slotOrder = formData.get("slotOrder") || "1";
-    const label = formData.get("sequenceLabel") || "";
+    const seq_condition = formData.get("seq_condition") || "displayAspectRatio == \"1920x1080\"";
+    const seq_slot = formData.get("seq_slot") || "1";
+    const seq_item = formData.get("seq_item") || "1";
+    const seq_label = formData.get("seq_label") || "";
 
     // ดึง prefix ตาม type ถ้าไม่เจอใช้ค่า default
     const prefix = "13DA9DDD7E8E70";
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
-    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${prefix}/${contentOrder}/${slotOrder}`;
+    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${prefix}/${seq_slot}/${seq_item}`;
 
     if (!STACKS_USERNAME || !STACKS_PASSWORD) {
       return {
@@ -42,8 +42,8 @@ export async function updateSequence(formData) {
       id: libraryId,
       data: {
         modifiedMillis: generateModifiedMillis(),
-        condition: signagForm,
-        label:label
+        condition: seq_condition,
+        label:seq_label
       },
     };
 
