@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { uploadAsset } from "../content/upload_library";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
+import seq_id_data from "../make_data/seq_id";
 
 // ฟังก์ชันแปลง datetime-local เป็น UnixTime UTC (ลบ 7 ชมสำหรับไทย timezone)
 function convertToUnixTime(dateTimeString) {
@@ -32,7 +33,10 @@ export default function CombinedPage() {
   const [contentLibraryId, setContentLibraryId] = useState("");
   const [lastContentName, setLastContentName] = useState("");
   const contentFileInputRef = useRef(null);
-  const [seq_condition, setseq_condition] = useState("displayAspectRatio == \"1920x1080\"");
+  const [seq_condition, setseq_condition] = useState(
+    'displayAspectRatio == "1920x1080"'
+  );
+  const [seq_id, setseq_id] = useState("133DA4F113E159");
   const [seq_slot, setseq_slot] = useState("1");
   const [seq_item, setseq_item] = useState("1");
 
@@ -191,9 +195,7 @@ export default function CombinedPage() {
     }
 
     const now = new Date();
-    const startDate = seq_startdate
-      ? new Date(seq_startdate)
-      : now;
+    const startDate = seq_startdate ? new Date(seq_startdate) : now;
     const endDate = seq_enddate ? new Date(seq_enddate) : null;
 
     // ตรวจสอบว่า StartDate ต้องไม่น้อยกว่าวันนี้ 00:00 AM
@@ -230,10 +232,7 @@ export default function CombinedPage() {
         // ignore parse errors and use campaignContentName as-is
       }
       formData.append("libraryId", resolvedLibraryId);
-      formData.append(
-        "startDateTime",
-        convertToUnixTime(seq_startdate)
-      );
+      formData.append("startDateTime", convertToUnixTime(seq_startdate));
       formData.append("endDateTime", convertToUnixTime(seq_enddate));
       formData.append("duration", seq_duration);
       formData.append("seq_slot", seq_slot);
@@ -270,15 +269,13 @@ export default function CombinedPage() {
         "seq_startdate",
         convertToUnixTime(seq_startdate || new Date())
       );
-      formData.append(
-        "seq_enddate",
-        convertToUnixTime(seq_enddate || "")
-      );
+      formData.append("seq_enddate", convertToUnixTime(seq_enddate || ""));
       formData.append("seq_duration", seq_duration);
       formData.append("seq_slot", seq_slot);
       formData.append("seq_item", seq_item);
       formData.append("seq_label", seq_label);
       formData.append("seq_condition", seq_condition);
+      formData.append("seq_id", seq_id);
 
       const result = await updateSequence(formData);
 
@@ -310,6 +307,28 @@ export default function CombinedPage() {
             </h2>
 
             <form onSubmit={handleCampaignSubmit} className="space-y-4">
+              {/* Campaign Type */}
+              <div>
+                <label
+                  htmlFor="signage-form"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Slot *
+                </label>
+                <select
+                  id="signage-form"
+                  value={seq_id}
+                  onChange={(e) => setseq_id(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isCampaignSubmitting}
+                >
+                  {Object.keys(seq_id_data).map((option) => (
+                    <option key={option} value={seq_id_data[option]}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div>
                 <label
                   htmlFor="campaign-content-name"
@@ -395,7 +414,7 @@ export default function CombinedPage() {
                   }
                   onChange={(e) => setseq_enddate(e.target.value)}
                 />
-                <label
+                {/* <label
                   htmlFor="campaign-duration"
                   className="block text-sm font-medium text-gray-700 my-3"
                 >
@@ -414,7 +433,7 @@ export default function CombinedPage() {
                       {option.label}
                     </option>
                   ))}
-                </select>
+                </select> */}
               </div>
 
               {/* Content Order */}
@@ -562,7 +581,8 @@ export default function CombinedPage() {
                         Drag file here or click to select file
                       </div>
                       <div className="text-sm text-gray-400">
-                        Supports only .mp4 / .jpg / .png files and Name English only
+                        Supports only .mp4 / .jpg / .png files and Name English
+                        only
                       </div>
                     </div>
                   )}

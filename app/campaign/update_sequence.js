@@ -15,19 +15,18 @@ export async function updateSequence(formData) {
     const libraryId = formData.get("libraryId");
     const startDateTime = formData.get("seq_startdate"); // รับเป็น UnixTime UTC แล้ว
     const endDateTime = formData.get("seq_enddate"); // รับเป็น UnixTime UTC แล้ว
-    const duration = formData.get("seq_duration");
+    // const duration = formData.get("seq_duration");
+    const duration = 1500;
 
     // 🔹 รับค่าจาก dropdown ใหม่
     const seq_condition = formData.get("seq_condition") || "displayAspectRatio == \"1920x1080\"";
     const seq_slot = formData.get("seq_slot") || "1";
     const seq_item = formData.get("seq_item") || "1";
     const seq_label = formData.get("seq_label") || "";
-
-    // ดึง prefix ตาม type ถ้าไม่เจอใช้ค่า default
-    const prefix = "13DA9DDD7E8E70";
+    const seq_id = formData.get("seq_id") || "133DA4F113E159";
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
-    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${prefix}/${seq_slot}/${seq_item}`;
+    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${seq_id}/${seq_slot}/${seq_item}`;
 
     if (!STACKS_USERNAME || !STACKS_PASSWORD) {
       return {
