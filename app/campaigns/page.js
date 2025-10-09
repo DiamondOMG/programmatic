@@ -124,7 +124,7 @@ export default function CombinedPage() {
   const handleContentSubmit = async (e) => {
     e.preventDefault();
 
-    if (!contentLabel || !contentFile) {
+    if ( !contentFile) {
       setContentMessage("Please fill in label and select file");
       setContentMessageType("error");
       return;
@@ -320,7 +320,7 @@ export default function CombinedPage() {
                   value={seq_label}
                   onChange={(e) => setseq_label(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter Content Name "
+                  placeholder="Enter Campaign Name "
                   disabled={isCampaignSubmitting}
                 />
               </div>
@@ -521,7 +521,7 @@ export default function CombinedPage() {
               className="space-y-4"
             >
               {/* Content Label Input */}
-              <div>
+              {/* <div>
                 <label
                   htmlFor="content-label"
                   className="block text-sm font-medium text-gray-700 mb-2"
@@ -538,7 +538,7 @@ export default function CombinedPage() {
                   placeholder="Enter Content Name"
                   disabled={isContentUploading}
                 />
-              </div>
+              </div> */}
 
               {/* Content File Upload Area */}
               <div>
@@ -642,7 +642,7 @@ export default function CombinedPage() {
         <button
           type="submit"
           form="uploadForm"
-          disabled={isContentUploading || !contentLabel || !contentFile}
+          disabled={isContentUploading || !contentFile}
           className="w-full bg-blue-600 text-white py-2 mt-4 px-4 rounded-md 
              hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
