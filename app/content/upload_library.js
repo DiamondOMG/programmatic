@@ -135,7 +135,7 @@ async function createLibraryRecord(id, pendingId) {
   const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
 
   const { error } = await supabaseAuthenticated.from("library").insert({
-    id: id,
+    library_id: id,
     pending_id: pendingId,
     user_id: user.id,
     created: new Date().toISOString(),

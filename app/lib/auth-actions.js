@@ -125,7 +125,7 @@ export async function registerUser(formData) {
     if (data.user) {
       // ถ้าสร้าง user สำเร็จ เก็บข้อมูลเพิ่มเติมในตาราง users
       const { error: insertError } = await supabase.from("users").insert({
-        uuid: data.user.id,
+        user_id: data.user.id,
         email,
         password_hash: hashedPassword,
         info: {},
