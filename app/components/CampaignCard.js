@@ -22,9 +22,12 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
         {/* รูปภาพด้านซ้าย */}
         <div className="flex-shrink-0">
           <img
-            src={campaign.image}
-            alt={campaign.title}
+            src={campaign.image || "/placeholder-image.jpg"}
+            alt={campaign.title || "ไม่มีชื่อ"}
             className="w-32 h-24 object-cover rounded-lg shadow-sm"
+            onError={(e) => {
+              e.target.src = "/placeholder-image.jpg";
+            }}
           />
         </div>
 

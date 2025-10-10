@@ -11,45 +11,37 @@ const CampaignsPage = () => {
   const [sequences, setSequences] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const campaigns = [
-    {
-      id: 1,
-      image:
-        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
-      title: "Summer Sale Campaign 2024",
-      description: "แคมเปญลดราคาสินค้าฤดูร้อน ลดสูงสุดถึง 50%",
-      startDate: "1 มิ.ย. 2024",
-      endDate: "31 ส.ค. 2024",
-      status: "Active",
-      budget: "฿50,000",
-    },
-    {
-      id: 2,
-      image:
-        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
-      title: "New Product Launch",
-      description: "เปิดตัวสินค้าใหม่ล่าสุด พร้อมโปรโมชั่นพิเศษ",
-      startDate: "15 ก.ค. 2024",
-      endDate: "30 ก.ย. 2024",
-      status: "Scheduled",
-      budget: "฿100,000",
-    },
-    {
-      id: 3,
-      image:
-        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
-      title: "Year End Clearance",
-      description: "ลดล้างสต็อกสิ้นปี ราคาพิเศษทุกรายการ",
-      startDate: "1 ธ.ค. 2024",
-      endDate: "31 ธ.ค. 2024",
-      status: "Draft",
-      budget: "฿75,000",
-    },
-  ];
+  const [selectedSequenceId, setSelectedSequenceId] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(false);
 
   const handleEdit = (id) => console.log("Edit campaign:", id);
   const handleDelete = (id) => console.log("Delete campaign:", id);
+
+  // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "ไม่มีกำหนด";
+    const date = new Date(parseInt(timestamp));
+    return date.toLocaleDateString('th-TH', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  // 🔹 ฟังก์ชันกำหนดสถานะจากวันที่
+  const getStatusFromDates = (startMillis, endMillis) => {
+    if (!startMillis || !endMillis) return "Draft";
+
+    const now = new Date().getTime();
+    const start = parseInt(startMillis);
+    const end = parseInt(endMillis);
+
+    if (now < start) return "Scheduled";
+    if (now >= start && now <= end) return "Active";
+    if (now > end) return "Completed";
+    return "Draft";
+  };
 
   // 🔹 ดึงข้อมูล sequences ของ user
   useEffect(() => {
@@ -70,6 +62,13 @@ const CampaignsPage = () => {
             return numA - numB;
           });
           setSequences(sorted);
+
+          // เซ็ตปุ่มแรกเป็น active และโหลดข้อมูล
+          if (sorted.length > 0) {
+            const firstSeqId = Object.values(sorted[0])[0];
+            setSelectedSequenceId(firstSeqId);
+            await loadCampaigns(firstSeqId);
+          }
         } else {
           setError(seq_by_user.message);
         }
@@ -84,15 +83,39 @@ const CampaignsPage = () => {
     fetchSequences();
   }, []);
 
-  // 🔹 ฟังก์ชันเมื่อกดปุ่ม Spot
-  const handleSelectSequence = async (seqId) => {
-    console.log("เรียกข้อมูลของ seq_id:", seqId);
+  // 🔹 ฟังก์ชันโหลดข้อมูลแคมเปญจาก API
+  const loadCampaigns = async (seqId) => {
+    setCampaignsLoading(true);
     try {
       const seq_by_id = await getSequenceById(seqId);
       console.log("seq_by_id", seq_by_id);
+
+      // แปลงข้อมูลให้ตรง format ที่ต้องการ
+      const formattedCampaigns = seq_by_id.map((item, index) => ({
+        id: item.libraryItemId || `item-${index}`,
+        image: item.blobId ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}` : "",
+        title: item.label || "ไม่มีชื่อ",
+        description: item.condition || "ไม่มีคำอธิบาย",
+        startDate: formatDate(item.startMillis),
+        endDate: formatDate(item.endMillis),
+        status: getStatusFromDates(item.startMillis, item.endMillis),
+        budget: item.modifiedMillis ? formatDate(item.modifiedMillis) : "ไม่มีข้อมูล"
+      }));
+
+      setCampaigns(formattedCampaigns);
     } catch (err) {
       console.error("เกิดข้อผิดพลาดตอนเรียก getSequenceById:", err);
+      setCampaigns([]);
+    } finally {
+      setCampaignsLoading(false);
     }
+  };
+
+  // 🔹 ฟังก์ชันเมื่อกดปุ่ม Spot
+  const handleSelectSequence = async (seqId) => {
+    console.log("เรียกข้อมูลของ seq_id:", seqId);
+    setSelectedSequenceId(seqId);
+    await loadCampaigns(seqId);
   };
 
   return (
@@ -112,14 +135,17 @@ const CampaignsPage = () => {
             {sequences.map((seqObj, index) => {
               const key = Object.keys(seqObj)[0];
               const value = seqObj[key];
-              console.log("seqObj", seqObj);
-              console.log("key", key);
-              console.log("value", value);
+              const isActive = selectedSequenceId === value;
+
               return (
                 <button
                   key={index}
                   onClick={() => handleSelectSequence(value)}
-                  className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-md transition"
+                  className={`px-4 py-2 rounded shadow-md transition ${
+                    isActive
+                      ? 'bg-blue-700 text-white'
+                      : 'bg-blue-300 hover:bg-blue-400 text-gray-700'
+                  }`}
                 >
                   {key}
                 </button>
@@ -130,14 +156,20 @@ const CampaignsPage = () => {
 
         {/* 🔹 แสดงรายการแคมเปญ */}
         <div className="space-y-4">
-          {campaigns.map((campaign) => (
-            <CampaignCard
-              key={campaign.id}
-              campaign={campaign}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+          {campaignsLoading ? (
+            <p className="text-gray-500">กำลังโหลดแคมเปญ...</p>
+          ) : campaigns.length === 0 ? (
+            <p className="text-gray-500">ไม่มีแคมเปญใน sequence นี้</p>
+          ) : (
+            campaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign.id}
+                campaign={campaign}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
         </div>
       </div>
 
