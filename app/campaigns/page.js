@@ -11,6 +11,7 @@ const CampaignsPage = () => {
   const [sequences, setSequences] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
   const campaigns = [
     {
       id: 1,
@@ -47,41 +48,52 @@ const CampaignsPage = () => {
     },
   ];
 
-  const handleEdit = (id) => {
-    console.log("Edit campaign:", id);
-    // เพิ่ม logic แก้ไขที่นี่
-  };
+  const handleEdit = (id) => console.log("Edit campaign:", id);
+  const handleDelete = (id) => console.log("Delete campaign:", id);
 
-  const handleDelete = (id) => {
-    console.log("Delete campaign:", id);
-    // เพิ่ม logic ลบที่นี่
-  };
-
-  // เรียกใช้ getUserSequences เมื่อโหลดหน้า
+  // 🔹 ดึงข้อมูล sequences ของ user
   useEffect(() => {
     async function fetchSequences() {
-      setIsLoading(true); // เริ่มโหลด
-      setError(null); // ล้างข้อผิดพลาดเดิม
-
+      setIsLoading(true);
+      setError(null);
       try {
-        // เรียก Server Action (ต้องใช้ await ภายในฟังก์ชัน async)
-        const result = await getUserSequences();
-        const result2 = await getSequenceById("1357E6072D53EE");
-        console.log("result", result);
-        console.log("result2", result2);
-        if (result.success) {
-          setSequences(result.data);
+        const seq_by_user = await getUserSequences();
+        console.log("seq_by_user", seq_by_user);
+
+        if (seq_by_user.success) {
+          // เรียง key เช่น Spot #1, Spot #2, ...
+          const sorted = seq_by_user.data.sort((a, b) => {
+            const keyA = Object.keys(a)[0];
+            const keyB = Object.keys(b)[0];
+            const numA = parseInt(keyA.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(keyB.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          });
+          setSequences(sorted);
         } else {
-          setError(result.message);
+          setError(seq_by_user.message);
         }
       } catch (e) {
+        console.error(e);
         setError("ไม่สามารถเชื่อมต่อกับ Server Action ได้");
       } finally {
-        setIsLoading(false); // โหลดเสร็จสิ้น
+        setIsLoading(false);
       }
     }
+
     fetchSequences();
-  }, []); // [] คือให้รันแค่ครั้งเดียวเมื่อคอมโพเนนต์ถูก Mount
+  }, []);
+
+  // 🔹 ฟังก์ชันเมื่อกดปุ่ม Spot
+  const handleSelectSequence = async (seqId) => {
+    console.log("เรียกข้อมูลของ seq_id:", seqId);
+    try {
+      const seq_by_id = await getSequenceById(seqId);
+      console.log("seq_by_id", seq_by_id);
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดตอนเรียก getSequenceById:", err);
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-200 to-cyan-50 p-8">
@@ -90,6 +102,33 @@ const CampaignsPage = () => {
           Campaign Management
         </h1>
 
+        {/* 🔹 แสดงปุ่ม Spot ที่ได้จาก seq_by_user */}
+        {isLoading ? (
+          <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {sequences.map((seqObj, index) => {
+              const key = Object.keys(seqObj)[0];
+              const value = seqObj[key];
+              console.log("seqObj", seqObj);
+              console.log("key", key);
+              console.log("value", value);
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleSelectSequence(value)}
+                  className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded shadow-md transition"
+                >
+                  {key}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 🔹 แสดงรายการแคมเปญ */}
         <div className="space-y-4">
           {campaigns.map((campaign) => (
             <CampaignCard
@@ -101,33 +140,22 @@ const CampaignsPage = () => {
           ))}
         </div>
       </div>
+
       <button
         onClick={() => setIsOpen(true)}
-        // Tailwind class สำหรับปุ่มเปิด Modal
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
       >
         เปิด Modal จัดการแคมเปญ
       </button>
 
-      {/* Headless UI Dialog Component */}
-      <Dialog
-        open={isOpen}
-        onClose={closeModal}
-        className="relative z-50" // z-index สูงเพื่อให้ขึ้นมาอยู่หน้าสุด
-      >
-        {/* Backdrop (พื้นหลังมืด) */}
+      {/* Modal */}
+      <Dialog open={isOpen} onClose={closeModal} className="relative z-50">
         <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-        {/* ปรับเป็น 50% ให้มืดขึ้น */}
-
-        {/* Full-screen container to center the panel */}
         <div className="fixed inset-0 flex items-center justify-center p-4">
-          {/* The actual dialog panel container */}
-          {/* ปรับแก้: w-[70vw] และ h-[70vh] เพื่อให้กว้าง-สูง 70% ของจอ และใช้ relative สำหรับปุ่มปิด */}
           <DialogPanel className="relative w-[70vw] h-[70vh] rounded bg-white p-2 shadow-2xl overflow-y-auto">
-            {/* 1. ปุ่มปิดแบบกากบาท (X) ที่มุมขวาบน */}
             <button
               onClick={closeModal}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
               <svg
@@ -144,8 +172,6 @@ const CampaignsPage = () => {
                 />
               </svg>
             </button>
-
-            {/* เนื้อหา Modal: CampaignManagement Component */}
             <div className="h-full">
               <CampaignManagement />
             </div>

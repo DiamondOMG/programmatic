@@ -11,7 +11,7 @@ const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 export async function getUserSequences() {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
-    throw new Error("getUserSequences failed: User not authenticated");
+    return { success: false, message: "User not authenticated" };
   }
 
   const supabase = await getAuthenticatedSupabaseClient();
@@ -22,9 +22,7 @@ export async function getUserSequences() {
     .eq("user_id", user.id);
 
   if (error) {
-    throw new Error(
-      `getUserSequences failed: Supabase error: ${error.message}`
-    );
+    return { success: false, message: `Supabase error: ${error.message}` };
   }
 
   // ✅ แปลงผลลัพธ์ให้เป็น [{ seq_name: seq_id }]
@@ -32,7 +30,7 @@ export async function getUserSequences() {
     [row.sequence.seq_name]: row.seq_id,
   }));
 
-  return formatted;
+  return { success: true, data: formatted };
 }
 
 export async function getSequenceById(seq_id) {
