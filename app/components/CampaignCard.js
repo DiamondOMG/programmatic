@@ -1,5 +1,6 @@
 import React from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import signage_form from "../make_data/signage_form.js";
 
 // Component Card แยกออกมา
 export default function CampaignCard({ campaign, onEdit, onDelete }) {
@@ -14,6 +15,16 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
       default:
         return "bg-gray-100 text-gray-700";
     }
+  };
+
+  // 🔹 ฟังก์ชัน map condition เป็น label
+  const getLabelFromCondition = (condition) => {
+    for (const [label, cond] of Object.entries(signage_form)) {
+      if (cond === condition) {
+        return label;
+      }
+    }
+    return condition; // ถ้าหาไม่เจอ แสดง condition เดิม
   };
 
   return (
@@ -32,7 +43,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
         </div>
 
         {/* ปุ่มแก้ไข/ลบตรงกลาง */}
-        <div className="flex flex-col gap-2 flex-shrink-0">
+        {/* <div className="flex flex-col gap-2 flex-shrink-0">
           <button
             onClick={() => onEdit(campaign.id)}
             className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
@@ -45,7 +56,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
           >
             <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
-        </div>
+        </div> */}
 
         {/* ข้อมูลด้านขวา */}
         <div className="flex-1 min-w-0">
@@ -55,7 +66,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
                 {campaign.title}
               </h3>
               <p className="text-gray-600 text-sm line-clamp-1">
-                {campaign.description}
+                {getLabelFromCondition(campaign.description)}
               </p>
             </div>
             <span
@@ -81,9 +92,9 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
               </p>
             </div>
             <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs text-gray-500 mb-1">Budget</p>
+              <p className="text-xs text-gray-500 mb-1">Last Modified</p>
               <p className="text-sm font-semibold text-blue-600">
-                {campaign.budget}
+                {campaign.modifiedMillis}
               </p>
             </div>
           </div>

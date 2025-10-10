@@ -99,7 +99,7 @@ const CampaignsPage = () => {
         startDate: formatDate(item.startMillis),
         endDate: formatDate(item.endMillis),
         status: getStatusFromDates(item.startMillis, item.endMillis),
-        budget: item.modifiedMillis ? formatDate(item.modifiedMillis) : "ไม่มีข้อมูล"
+        modifiedMillis: item.modifiedMillis ? formatDate(item.modifiedMillis) : "ไม่มีข้อมูล"
       }));
 
       setCampaigns(formattedCampaigns);
@@ -121,13 +121,22 @@ const CampaignsPage = () => {
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-200 to-cyan-50 p-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">
-          Campaign Management
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Campaign Management
+          </h1>
+          <button
+            onClick={() => setIsOpen(true)}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+          >
+            Add Campaign
+          </button>
+        </div>
+        
 
         {/* 🔹 แสดงปุ่ม Spot ที่ได้จาก seq_by_user */}
         {isLoading ? (
-          <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
+          null
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
@@ -157,9 +166,9 @@ const CampaignsPage = () => {
         {/* 🔹 แสดงรายการแคมเปญ */}
         <div className="space-y-4">
           {campaignsLoading ? (
-            <p className="text-gray-500">กำลังโหลดแคมเปญ...</p>
+            null
           ) : campaigns.length === 0 ? (
-            <p className="text-gray-500">ไม่มีแคมเปญใน sequence นี้</p>
+            null
           ) : (
             campaigns.map((campaign) => (
               <CampaignCard
@@ -172,13 +181,6 @@ const CampaignsPage = () => {
           )}
         </div>
       </div>
-
-      <button
-        onClick={() => setIsOpen(true)}
-        className="mt-6 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      >
-        เปิด Modal จัดการแคมเปญ
-      </button>
 
       {/* Modal */}
       <Dialog open={isOpen} onClose={closeModal} className="relative z-50">
