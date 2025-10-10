@@ -221,3 +221,18 @@ export async function refreshSession() {
     return { success: false, message: error.message };
   }
 }
+
+//ใช้สำหรับ ฉีด Cookie เข้า Header
+export async function getAuthenticatedSupabaseClient() {
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("access_token")?.value;
+
+  // สร้าง Client ที่ฉีด JWT จากคุกกี้เข้าไปใน Header
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : undefined,
+      },
+    },
+  });
+}

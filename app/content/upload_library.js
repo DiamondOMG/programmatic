@@ -1,29 +1,13 @@
 "use server";
 
-import { createClient } from "@supabase/supabase-js";
-import { getCurrentUser } from "../lib/auth-actions.js";
-import { cookies } from "next/headers";
+import {
+  getCurrentUser,
+  getAuthenticatedSupabaseClient,
+} from "../lib/auth-actions.js";
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
 const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
-
-// ใช้ Supabase client เดียวกับ auth-actions.js
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-async function getAuthenticatedSupabaseClient() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token")?.value;
-
-  // สร้าง Client ที่ฉีด JWT จากคุกกี้เข้าไปใน Header
-  return createClient(supabaseUrl, supabaseAnonKey, {
-    global: {
-      headers: {
-        Authorization: accessToken ? `Bearer ${accessToken}` : undefined,
-      },
-    },
-  });
-}
 
 // ฟังก์ชันสร้าง pendingId (เลขสุ่ม + timestamp)
 function generatePendingId() {
