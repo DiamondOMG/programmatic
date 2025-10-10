@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { getCurrentUser } from "../lib/auth-actions.js";
-import { cookies } from "next/headers"; // <--- เพิ่มตัวนี้
+import { cookies } from "next/headers";
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
@@ -12,7 +12,7 @@ const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 async function getAuthenticatedSupabaseClient() {
-  const cookieStore = await cookies(); // 👈 แก้ตรงนี้: AWAIT cookies()
+  const cookieStore = await cookies();
   const accessToken = cookieStore.get("access_token")?.value;
 
   // สร้าง Client ที่ฉีด JWT จากคุกกี้เข้าไปใน Header
@@ -75,8 +75,10 @@ async function createLibraryItem(label) {
   );
 
   if (!response.ok) {
+    // 📢 เพิ่ม Step ใน Error message
+    const errorDetails = await response.text();
     throw new Error(
-      `Failed to create library item: ${response.status} ${response.statusText}`
+      `Step 1 (createLibraryItem) failed: ${response.status} ${response.statusText}. Details: ${errorDetails}`
     );
   }
 
@@ -110,23 +112,26 @@ async function uploadFile(file, itemId, pendingId, fileName) {
   });
 
   if (!response.ok) {
+    // 📢 เพิ่ม Step ใน Error message
+    const errorDetails = await response.text();
     throw new Error(
-      `Failed to upload file: ${response.status} ${response.statusText}`
+      `Step 2 (uploadFile) failed: ${response.status} ${response.statusText}. Details: ${errorDetails}`
     );
   }
 
   return response;
 }
 
-// ฟังก์ชันบันทึกข้อมูลลง library table (ใช้ getCurrentUser จาก auth-actions.js)
 // ฟังก์ชันบันทึกข้อมูลลง library table
 async function createLibraryRecord(id, pendingId) {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
-    throw new Error("User not authenticated");
+    // 📢 เพิ่ม Step ใน Error message
+    throw new Error(
+      "Step 3 (createLibraryRecord) failed: User not authenticated"
+    );
   }
 
-  // 👈 แก้ตรงนี้: AWAIT การสร้าง Client
   const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
 
   const { error } = await supabaseAuthenticated.from("library").insert({
@@ -137,8 +142,10 @@ async function createLibraryRecord(id, pendingId) {
   });
 
   if (error) {
-    // **ส่วนนี้ไม่ควรติดแล้ว**
-    throw new Error(`Failed to create library record: ${error.message}`);
+    // 📢 เพิ่ม Step ใน Error message
+    throw new Error(
+      `Step 3 (createLibraryRecord) failed: Supabase error: ${error.message}`
+    );
   }
 
   return { success: true };
@@ -161,14 +168,45 @@ export async function uploadAsset(formData) {
       };
     }
 
+    let id, pendingId;
+
     // Step 1: สร้าง library item
-    const { id, pendingId } = await createLibraryItem(label);
+    try {
+      console.log("Starting Step 1: createLibraryItem");
+      const result = await createLibraryItem(label);
+      id = result.id;
+      pendingId = result.pendingId;
+      console.log(`Step 1 success. Item ID: ${id}, Pending ID: ${pendingId}`);
+    } catch (e) {
+      // 🚨 จับ error เฉพาะ Step 1
+      console.error("Error in Step 1:", e);
+      // Re-throw เพื่อให้ไปเข้า catch ใหญ่
+      throw e;
+    }
 
     // Step 2: Upload ไฟล์
-    await uploadFile(file, id, pendingId, file.name);
+    try {
+      console.log("Starting Step 2: uploadFile");
+      await uploadFile(file, id, pendingId, file.name);
+      console.log("Step 2 success. File uploaded.");
+    } catch (e) {
+      // 🚨 จับ error เฉพาะ Step 2
+      console.error("Error in Step 2:", e);
+      // Re-throw เพื่อให้ไปเข้า catch ใหญ่
+      throw e;
+    }
 
     // Step 3: บันทึกข้อมูลลง library table
-    await createLibraryRecord(id, pendingId);
+    try {
+      console.log("Starting Step 3: createLibraryRecord");
+      await createLibraryRecord(id, pendingId);
+      console.log("Step 3 success. Record saved to Supabase.");
+    } catch (e) {
+      // 🚨 จับ error เฉพาะ Step 3
+      console.error("Error in Step 3:", e);
+      // Re-throw เพื่อให้ไปเข้า catch ใหญ่
+      throw e;
+    }
 
     return {
       success: true,
@@ -176,10 +214,16 @@ export async function uploadAsset(formData) {
       data: { id },
     };
   } catch (error) {
-    console.error("Upload error:", error);
+    // 🔍 แสดงข้อความ Error ที่รวมถึง Step ที่ผิดพลาด
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "An unknown error occurred during upload";
+    console.error("Final Upload error:", errorMessage);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Error uploading file",
+      // 💡 ส่ง Error message ที่ระบุ Step กลับไปยัง client
+      error: `Error uploading file. Check logs for details. Cause: ${errorMessage}`,
     };
   }
 }
