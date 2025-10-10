@@ -11,26 +11,28 @@ const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 export async function getUserSequences() {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
-    // 📢 เพิ่ม Step ใน Error message
-    throw new Error(
-      "Step 3 (createLibraryRecord) failed: User not authenticated"
-    );
+    throw new Error("getUserSequences failed: User not authenticated");
   }
 
-  const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+  const supabase = await getAuthenticatedSupabaseClient();
 
-  const { error, data } = await supabaseAuthenticated
+  const { data, error } = await supabase
     .from("sequence_users")
-    .select("*")
+    .select("seq_id, sequence(seq_name)")
     .eq("user_id", user.id);
+
   if (error) {
-    // 📢 เพิ่ม Step ใน Error message
     throw new Error(
-      `Step 3 (createLibraryRecord) failed: Supabase error: ${error.message}`
+      `getUserSequences failed: Supabase error: ${error.message}`
     );
   }
 
-  return { success: true, data: data };
+  // ✅ แปลงผลลัพธ์ให้เป็น [{ seq_name: seq_id }]
+  const formatted = data.map((row) => ({
+    [row.sequence.seq_name]: row.seq_id,
+  }));
+
+  return formatted;
 }
 
 export async function getSequenceById(seq_id) {

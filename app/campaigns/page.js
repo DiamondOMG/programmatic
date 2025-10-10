@@ -15,7 +15,7 @@ const CampaignsPage = () => {
     {
       id: 1,
       image:
-        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop",
+        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
       title: "Summer Sale Campaign 2024",
       description: "แคมเปญลดราคาสินค้าฤดูร้อน ลดสูงสุดถึง 50%",
       startDate: "1 มิ.ย. 2024",
@@ -26,7 +26,7 @@ const CampaignsPage = () => {
     {
       id: 2,
       image:
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
+        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
       title: "New Product Launch",
       description: "เปิดตัวสินค้าใหม่ล่าสุด พร้อมโปรโมชั่นพิเศษ",
       startDate: "15 ก.ค. 2024",
@@ -37,7 +37,7 @@ const CampaignsPage = () => {
     {
       id: 3,
       image:
-        "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=300&fit=crop",
+        "https://d2cep6vins8x6z.blobstore.net/F273B6D53DD61CDFFAD1999FA335EB81-22179",
       title: "Year End Clearance",
       description: "ลดล้างสต็อกสิ้นปี ราคาพิเศษทุกรายการ",
       startDate: "1 ธ.ค. 2024",
