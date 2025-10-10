@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { uploadAsset } from "../content/upload_library";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
-import seq_id_data from "../make_data/seq_id";
+import seq_table from "../make_data/seq_table";
 
 // Constants
 const ENTERPRISE = "A";
@@ -216,21 +216,21 @@ export default function CombinedPage() {
                 Spot *
               </label>
               <div className="flex flex-wrap gap-4">
-                {Object.keys(seq_id_data).map((option) => (
+                {seq_table.map((item) => (
                   <label
-                    key={option}
+                    key={item.seq_name}
                     className="flex items-center space-x-2 cursor-pointer"
                   >
                     <input
                       type="radio"
                       name="signage-form"
-                      value={seq_id_data[option]}
-                      checked={seq_id === seq_id_data[option]}
+                      value={item.seq_id}
+                      checked={seq_id === item.seq_id}
                       onChange={(e) => setseq_id(e.target.value)}
                       disabled={false}
                       className="text-blue-600 focus:ring-blue-500"
                     />
-                    <span className="text-gray-700">{option}</span>
+                    <span className="text-gray-700">{item.seq_name}</span>
                   </label>
                 ))}
               </div>

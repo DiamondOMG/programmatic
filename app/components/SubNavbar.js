@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-export default function Navbar() {
+export default function SubNavbar() {
   const pathname = usePathname();
 
   // ไม่แสดง navbar ในหน้าแรก (/)
@@ -12,7 +12,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-md border-b h-16">
+    <nav className="bg-white shadow-md border-b h-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -27,7 +27,8 @@ export default function Navbar() {
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 pathname === "/campaigns"
                   ? "bg-blue-100 text-blue-700"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
             >
               Campaigns
             </Link>

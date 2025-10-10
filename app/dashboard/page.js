@@ -43,11 +43,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">กำลังโหลด...</div>
-      </div>
-    );
+    return null
   }
 
   if (!user) {
@@ -55,7 +51,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
