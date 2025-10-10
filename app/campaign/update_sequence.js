@@ -17,7 +17,6 @@ export async function updateSequence(formData) {
     const endDateTime = formData.get("seq_enddate"); // รับเป็น UnixTime UTC แล้ว
     // const duration = formData.get("seq_duration");
     const duration = 1500;
-
     // 🔹 รับค่าจาก dropdown ใหม่
     const seq_condition = formData.get("seq_condition") || "displayAspectRatio == \"1920x1080\"";
     const seq_slot = formData.get("seq_slot") || "1";
@@ -45,10 +44,11 @@ export async function updateSequence(formData) {
         label:seq_label
       },
     };
-
+    console.log("startDateTime", startDateTime);
+    console.log("endDateTime", endDateTime);
     // เพิ่มค่า optional
     if (startDateTime) requestBody.data.startMillis = startDateTime;
-    if (endDateTime) requestBody.data.endMillis = endDateTime;
+    if (endDateTime && endDateTime !== "" && endDateTime !== "null") requestBody.data.endMillis = endDateTime;
     if (duration) requestBody.data.durationMillis = duration;
 
     // 🔹 Basic Auth
