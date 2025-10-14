@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import CampaignManagement from "../components/CampaignManagement";
 import CampaignCard from "../components/CampaignCard";
-import { getUserSequences, getSequenceById } from "./get_sequence";
+import { get_sequence_all } from "./get_sequence";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,34 +43,49 @@ const CampaignsPage = () => {
     return "Draft";
   };
 
-  // 🔹 ดึงข้อมูล sequences ของ user
+  // 🔹 ดึงข้อมูลทั้งหมดจาก get_sequence_all
   useEffect(() => {
-    async function fetchSequences() {
+    async function fetchAllData() {
       setIsLoading(true);
       setError(null);
       try {
-        const seq_by_user = await getUserSequences();
-        console.log("seq_by_user", seq_by_user);
+        const result = await get_sequence_all();
+        console.log("get_sequence_all result:", result);
 
-        if (seq_by_user.success) {
-          // เรียง key เช่น Spot #1, Spot #2, ...
-          const sorted = seq_by_user.data.sort((a, b) => {
-            const keyA = Object.keys(a)[0];
-            const keyB = Object.keys(b)[0];
-            const numA = parseInt(keyA.match(/\d+/)?.[0] || 0);
-            const numB = parseInt(keyB.match(/\d+/)?.[0] || 0);
-            return numA - numB;
-          });
-          setSequences(sorted);
+        if (result.success) {
+          // จัดกลุ่มข้อมูลตาม seq_name
+          const groupedBySequence = result.data.reduce((acc, item) => {
+            if (!acc[item.seq_name]) {
+              acc[item.seq_name] = [];
+            }
+            acc[item.seq_name].push(item);
+            return acc;
+          }, {});
 
-          // เซ็ตปุ่มแรกเป็น active และโหลดข้อมูล
-          if (sorted.length > 0) {
-            const firstSeqId = Object.values(sorted[0])[0];
+          // แปลงเป็น array ของ sequences สำหรับปุ่มเลือก
+          const sequencesArray = Object.keys(groupedBySequence)
+            .sort((a, b) => {
+              const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+              const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+              return numA - numB;
+            })
+            .map(seqName => ({
+              [seqName]: groupedBySequence[seqName][0].seq_id
+            }));
+
+          setSequences(sequencesArray);
+
+          // เซ็ต sequence แรกเป็น active และโหลดข้อมูล
+          if (sequencesArray.length > 0) {
+            const firstSeqId = Object.values(sequencesArray[0])[0];
             setSelectedSequenceId(firstSeqId);
-            await loadCampaigns(firstSeqId);
+            const firstSeqName = Object.keys(sequencesArray[0])[0];
+            const rawCampaigns = groupedBySequence[firstSeqName] || [];
+            const formattedCampaigns = formatCampaignData(rawCampaigns);
+            setCampaigns(formattedCampaigns);
           }
         } else {
-          setError(seq_by_user.message);
+          setError(result.message);
         }
       } catch (e) {
         console.error(e);
@@ -80,42 +95,58 @@ const CampaignsPage = () => {
       }
     }
 
-    fetchSequences();
+    fetchAllData();
   }, []);
 
-  // 🔹 ฟังก์ชันโหลดข้อมูลแคมเปญจาก API
-  const loadCampaigns = async (seqId) => {
-    setCampaignsLoading(true);
-    try {
-      const seq_by_id = await getSequenceById(seqId);
-      console.log("seq_by_id", seq_by_id);
-
-      // แปลงข้อมูลให้ตรง format ที่ต้องการ
-      const formattedCampaigns = seq_by_id.map((item, index) => ({
-        id: item.libraryItemId || `item-${index}`,
-        image: item.blobId ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}` : "",
-        title: item.label || "ไม่มีชื่อ",
-        description: item.condition || "ไม่มีคำอธิบาย",
-        startDate: formatDate(item.startMillis),
-        endDate: formatDate(item.endMillis),
-        status: getStatusFromDates(item.startMillis, item.endMillis),
-        modifiedMillis: item.modifiedMillis ? formatDate(item.modifiedMillis) : "ไม่มีข้อมูล"
-      }));
-
-      setCampaigns(formattedCampaigns);
-    } catch (err) {
-      console.error("เกิดข้อผิดพลาดตอนเรียก getSequenceById:", err);
-      setCampaigns([]);
-    } finally {
-      setCampaignsLoading(false);
-    }
+  // 🔹 ฟังก์ชัน format ข้อมูลสำหรับแสดงผล
+  const formatCampaignData = (items) => {
+    return items.map((item, index) => ({
+      id: item.libraryItemId || `item-${index}`,
+      image: item.blobId ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}` : "",
+      title: item.label || "ไม่มีชื่อ",
+      description: item.condition || "ไม่มีคำอธิบาย",
+      startDate: formatDate(item.startMillis),
+      endDate: formatDate(item.endMillis),
+      status: getStatusFromDates(item.startMillis, item.endMillis),
+      modifiedMillis: item.modifiedMillis ? formatDate(item.modifiedMillis) : "ไม่มีข้อมูล"
+    }));
   };
 
   // 🔹 ฟังก์ชันเมื่อกดปุ่ม Spot
-  const handleSelectSequence = async (seqId) => {
-    console.log("เรียกข้อมูลของ seq_id:", seqId);
+  const handleSelectSequence = (seqId) => {
+    console.log("เลือก sequence:", seqId);
     setSelectedSequenceId(seqId);
-    await loadCampaigns(seqId);
+
+    // หาชื่อ sequence และข้อมูลที่เกี่ยวข้อง
+    const selectedSeqName = sequences.find(seqObj => Object.values(seqObj)[0] === seqId)
+      ? Object.keys(sequences.find(seqObj => Object.values(seqObj)[0] === seqId))[0]
+      : null;
+
+    if (selectedSeqName) {
+      setCampaignsLoading(true);
+
+      // ดึงข้อมูลใหม่จาก API เพื่อให้ได้ข้อมูล campaigns สำหรับ sequence ที่เลือก
+      get_sequence_all().then(result => {
+        if (result.success) {
+          const groupedBySequence = result.data.reduce((acc, item) => {
+            if (!acc[item.seq_name]) {
+              acc[item.seq_name] = [];
+            }
+            acc[item.seq_name].push(item);
+            return acc;
+          }, {});
+
+          const rawCampaigns = groupedBySequence[selectedSeqName] || [];
+          const formattedCampaigns = formatCampaignData(rawCampaigns);
+          setCampaigns(formattedCampaigns);
+        }
+        setCampaignsLoading(false);
+      }).catch(err => {
+        console.error("เกิดข้อผิดพลาดตอนดึงข้อมูล:", err);
+        setCampaigns([]);
+        setCampaignsLoading(false);
+      });
+    }
   };
 
   return (
@@ -166,9 +197,13 @@ const CampaignsPage = () => {
         {/* 🔹 แสดงรายการแคมเปญ */}
         <div className="space-y-4">
           {campaignsLoading ? (
-            null
+            <div className="text-center py-8">
+              <p className="text-gray-600">กำลังโหลดข้อมูลแคมเปญ...</p>
+            </div>
           ) : campaigns.length === 0 ? (
-            null
+            <div className="text-center py-8">
+              <p className="text-gray-600">ไม่มีแคมเปญใน Sequence นี้</p>
+            </div>
           ) : (
             campaigns.map((campaign) => (
               <CampaignCard

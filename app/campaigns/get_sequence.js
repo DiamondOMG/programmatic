@@ -18,8 +18,8 @@ export async function getUserSequences() {
 
   const { data, error } = await supabase
     .from("sequence_users")
-    .select("seq_id, sequence(seq_name)")
-    // .eq("user_id", user.id);
+    .select("seq_id, sequence(seq_name)");
+  // .eq("user_id", user.id);
 
   if (error) {
     return { success: false, message: `Supabase error: ${error.message}` };
@@ -73,4 +73,45 @@ function extractItems(data) {
       };
     })
   );
+}
+
+export async function get_sequence_all() {
+  // ดึงข้อมูล sequences ทั้งหมดของ user
+  const { success: userSuccess, data: sequences } = await getUserSequences();
+  if (!userSuccess || !sequences) {
+    return { success: false, message: "Failed to get user sequences" };
+  }
+
+  // เก็บผลลัพธ์ทั้งหมด
+  const allItems = [];
+
+  // วนลูปเรียก getSequenceById สำหรับแต่ละ sequence
+  for (const sequence of sequences) {
+    // แปลง object เป็น array ของ [seq_name, seq_id]
+    const [[seq_name, seq_id]] = Object.entries(sequence);
+
+    try {
+      const items = await getSequenceById(seq_id);
+      if (items && items.length > 0) {
+        // เพิ่ม seq_name เข้าไปในแต่ละ item
+        const itemsWithSeqName = items.map((item) => ({
+          ...item,
+          seq_name: seq_name,
+          seq_id: seq_id,
+        }));
+        allItems.push(...itemsWithSeqName);
+      }
+    } catch (error) {
+      console.error(`Error getting sequence ${seq_id}:`, error);
+      // อาจจะข้าม sequence ที่มีปัญหา หรือ return error
+      continue;
+    }
+  }
+
+  return {
+    success: true,
+    data: allItems,
+    total_sequences: sequences.length,
+    total_items: allItems.length,
+  };
 }

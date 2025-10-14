@@ -112,8 +112,8 @@ export default function AuthPage() {
             <div
               className={`text-center text-sm p-3 rounded-md ${
                 message.includes("Login Success !") || message.includes("Register Success !, Please Check Email")
-                  ? "text-green-600 bg-green-50"
-                  : "text-red-600 bg-red-50"
+                  ? "text-green-600 bg-gradient-to-br from-green-50 to-green-100"
+                  : "text-red-600 bg-gradient-to-br from-red-50 to-pink-100"
               }`}
             >
               {message}
