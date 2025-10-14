@@ -8,6 +8,7 @@ import { get_sequence_all } from "./get_sequence";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedSequenceId, setSelectedSequenceId] = useState(null);
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
 
@@ -44,7 +45,7 @@ const CampaignsPage = () => {
   const formatCampaignData = (items) => {
     // สร้าง Set เพื่อเก็บ ID ที่เคยเห็นแล้ว
     const seenIds = new Set();
-    
+
     return items.map((item, index) => {
       // สร้าง unique ID โดยรวม index เข้าไปด้วยถ้าเจอ ID ซ้ำ
       let uniqueId = item.libraryItemId || `item-${index}`;
@@ -52,7 +53,7 @@ const CampaignsPage = () => {
         uniqueId = `${uniqueId}-${index}`; // เพิ่ม index ถ้าเจอ ID ซ้ำ
       }
       seenIds.add(uniqueId);
-      
+
       return {
         id: uniqueId,
         image: item.blobId
@@ -106,7 +107,7 @@ const CampaignsPage = () => {
       // โหลดข้อมูลทั้งหมดจากทุก sequence
       if (sequencesArray.length > 0) {
         const allCampaigns = [];
-        Object.values(groupedBySequence).forEach(sequenceCampaigns => {
+        Object.values(groupedBySequence).forEach((sequenceCampaigns) => {
           allCampaigns.push(...sequenceCampaigns);
         });
         setFilteredCampaigns(formatCampaignData(allCampaigns));
@@ -161,7 +162,7 @@ const CampaignsPage = () => {
           <p className="text-red-500 text-center py-8">{error.message}</p>
         ) : (
           <>
-            <div className="ml-2 flex gap-2 overflow-x-auto py-2 mb-8">
+            <div className="ml-2 flex gap-2 overflow-x-auto ">
               {allData?.sequences.map((seqObj, index) => {
                 const seqName = Object.keys(seqObj)[0];
                 const seqId = seqObj[seqName];
@@ -235,7 +236,7 @@ const CampaignsPage = () => {
                       />
                     ) : (
                       <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Image
+                        No Campaign
                       </div>
                     )}
 
@@ -246,6 +247,91 @@ const CampaignsPage = () => {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="relative inline-block text-left ml-2 w-full">
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="inline-flex  w-20 rounded-md border border-gray-300 shadow-sm px-4 py-2 my-4 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  id="filter-menu"
+                  aria-expanded="true"
+                  aria-haspopup="true"
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                >
+                  Filter
+                  <svg
+                    className="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {isFilterOpen && (
+                <div
+                  className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="filter-menu"
+                >
+                  <div className="py-1" role="none">
+                    <button
+                      onClick={() => {
+                        // Show all campaigns
+                        const allCampaigns = [];
+                        Object.values(allData?.groupedData || {}).forEach(
+                          (sequenceCampaigns) => {
+                            allCampaigns.push(...sequenceCampaigns);
+                          }
+                        );
+                        setFilteredCampaigns(formatCampaignData(allCampaigns));
+                        setSelectedSequenceId(null);
+                        setIsFilterOpen(false);
+                      }}
+                      className={`${
+                        selectedSequenceId === null
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-700"
+                      } block w-full text-left px-4 py-2 text-sm hover:bg-gray-100`}
+                      role="menuitem"
+                    >
+                      All campaigns
+                    </button>
+                    {allData?.sequences.map((seqObj) => {
+                      const seqName = Object.keys(seqObj)[0];
+                      const seqId = seqObj[seqName];
+                      const isActive = selectedSequenceId === seqId;
+
+                      return (
+                        <button
+                          key={seqId}
+                          onClick={() => {
+                            handleSelectSequence(seqId);
+                            setIsFilterOpen(false);
+                          }}
+                          className={`${
+                            isActive
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-700"
+                          } block w-full text-left px-4 py-2 text-sm hover:bg-gray-100`}
+                          role="menuitem"
+                        >
+                          Only {seqName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
