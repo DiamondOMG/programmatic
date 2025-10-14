@@ -40,12 +40,12 @@ export default function AuthPage() {
       }
 
       if (isLogin) {
-        setMessage("เข้าสู่ระบบสำเร็จ! กำลังเปลี่ยนหน้า...");
+        setMessage("Login Success !");
         setTimeout(() => {
           router.push("/dashboard");
         }, 1000);
       } else {
-        setMessage("สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยัน");
+        setMessage("Register Success !, Please Check Email");
       }
     } catch (error) {
       setMessage(error.message);
@@ -111,7 +111,7 @@ export default function AuthPage() {
           {message && (
             <div
               className={`text-center text-sm p-3 rounded-md ${
-                message.includes("success")
+                message.includes("Login Success !") || message.includes("Register Success !, Please Check Email")
                   ? "text-green-600 bg-green-50"
                   : "text-red-600 bg-red-50"
               }`}
