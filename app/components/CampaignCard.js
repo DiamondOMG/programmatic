@@ -32,6 +32,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
       <div className="flex items-center p-4 gap-6">
         {/* รูปภาพด้านซ้าย */}
         <div className="flex-shrink-0">
+          <h1 className="text-xl font-bold">{campaign.seq_name}</h1>
           <img
             src={campaign.image || "/placeholder-image.jpg"}
             alt={campaign.title || "ไม่มีชื่อ"}
@@ -60,9 +61,9 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
 
         {/* ข้อมูลด้านขวา */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex items-start  gap-4">
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-gray-800 mb-1">
+              <h3 className="text-l font-bold text-gray-800 mb-1">
                 {campaign.title}
               </h3>
               <p className="text-gray-600 text-sm line-clamp-1">
@@ -78,17 +79,11 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-3">
+          <div className="grid grid-cols-3 gap-4 mt-3 ">
             <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs text-gray-500 mb-1">Start Date</p>
+              <p className="text-xs text-gray-500 mb-1">Period Run</p>
               <p className="text-sm font-semibold text-gray-800">
-                {campaign.startDate}
-              </p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-3">
-              <p className="text-xs text-gray-500 mb-1">End Date</p>
-              <p className="text-sm font-semibold text-gray-800">
-                {campaign.endDate}
+                {campaign.startDate} - {campaign.endDate}
               </p>
             </div>
             <div className="bg-blue-50 rounded-lg p-3">
@@ -97,6 +92,12 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
                 {campaign.modifiedMillis}
               </p>
             </div>
+            <div className="bg-blue-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 mb-1">Modified By</p>
+              <p className="text-sm font-semibold text-blue-600">
+                {campaign.email ? campaign.email : "Some One"}
+              </p>
+              </div>
           </div>
         </div>
       </div>

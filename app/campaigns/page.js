@@ -18,11 +18,13 @@ const CampaignsPage = () => {
 
   // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
   const formatDate = (timestamp) => {
-    if (!timestamp) return "ไม่มีกำหนด";
+    if (!timestamp || isNaN(timestamp)) return "None";
+
     const date = new Date(parseInt(timestamp));
-    return date.toLocaleDateString("th-TH", {
+
+    return date.toLocaleDateString("en-GB", {
       day: "numeric",
-      month: "short",
+      month: "long",
       year: "numeric",
     });
   };
@@ -69,6 +71,7 @@ const CampaignsPage = () => {
         modifiedMillis: item.modifiedMillis
           ? formatDate(item.modifiedMillis)
           : "ไม่มีข้อมูล",
+        seq_name: item.seq_name,
       };
     });
   };
@@ -334,20 +337,82 @@ const CampaignsPage = () => {
               )}
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {filteredCampaigns.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-600">ไม่มีแคมเปญใน Sequence นี้</p>
                 </div>
               ) : (
-                filteredCampaigns.map((campaign) => (
-                  <CampaignCard
-                    key={campaign.id}
-                    campaign={campaign}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                  />
-                ))
+                <>
+                  {/* Running Section */}
+                  <div className="border-l-4 border-green-500 pl-4">
+                    <h3 className="text-lg font-medium text-green-600 mb-3">
+                      Running
+                    </h3>
+                    <div className="space-y-3">
+                      {filteredCampaigns
+                        .filter((campaign) => campaign.status === "Running")
+                        .map((campaign) => (
+                          <div
+                            key={campaign.id}
+                            className="border border-green-200 rounded-lg "
+                          >
+                            <CampaignCard
+                              campaign={campaign}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Scheduled Section */}
+                  <div className="border-l-4 border-yellow-500 pl-4 mt-6">
+                    <h3 className="text-lg font-medium text-yellow-600 mb-3">
+                      Scheduled
+                    </h3>
+                    <div className="space-y-3">
+                      {filteredCampaigns
+                        .filter((campaign) => campaign.status === "Schedule")
+                        .map((campaign) => (
+                          <div
+                            key={campaign.id}
+                            className="border border-yellow-200 rounded-lg "
+                          >
+                            <CampaignCard
+                              campaign={campaign}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Completed Section */}
+                  <div className="border-l-4 border-gray-400 pl-4 mt-6">
+                    <h3 className="text-lg font-medium text-gray-500 mb-3">
+                      Completed
+                    </h3>
+                    <div className="space-y-3">
+                      {filteredCampaigns
+                        .filter((campaign) => campaign.status === "Complete")
+                        .map((campaign) => (
+                          <div
+                            key={campaign.id}
+                            className="border border-gray-200 rounded-lg "
+                          >
+                            <CampaignCard
+                              campaign={campaign}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                            />
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </>

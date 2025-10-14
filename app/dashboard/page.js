@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, logoutUser } from "@/app/lib/auth-actions";
+import { getCurrentUser } from "@/app/lib/auth-actions";
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -29,18 +29,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const result = await logoutUser();
-      if (result.success) {
-        router.push("/");
-      } else {
-        throw new Error(result.message);
-      }
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
 
   if (loading) {
     return null
