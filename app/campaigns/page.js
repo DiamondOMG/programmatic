@@ -202,8 +202,8 @@ const CampaignsPage = () => {
                   <div
                     key={index}
                     onClick={() => handleSelectSequence(seqId)}
-                    className={`flex-shrink-0 w-38 flex flex-col items-center bg-gray-100 rounded p-2 cursor-pointer ${
-                      isActive ? "ring-2 ring-blue-500" : ""
+                    className={`flex-shrink-0 w-38 flex flex-col items-center bg-gray-100 rounded-lg p-2 cursor-pointer ${
+                      isActive ? "ring-2 ring-blue-500 ring-inset" : ""
                     }`}
                   >
                     {/* ชื่อ + status */}
