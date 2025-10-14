@@ -55,21 +55,21 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">แดชบอร์ด</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           </div>
 
           <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">ข้อมูลผู้ใช้</h2>
+              <h2 className="text-lg font-semibold text-gray-800">User Information</h2>
               <div className="mt-2 p-4 bg-gray-50 rounded-md">
                 <p>
-                  <strong>อีเมล:</strong> {user.email}
+                  <strong>Email:</strong> {user.email}
                 </p>
               </div>
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">เมนู</h2>
+              <h2 className="text-lg font-semibold text-gray-800">Menu</h2>
               <div className="mt-2 grid grid-cols-1 md:grid-cols-1 gap-4">
                 {/* <a
                   href="/content"
