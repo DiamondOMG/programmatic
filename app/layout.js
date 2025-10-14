@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "./components/Navbar";
 import "./globals.css";
+import Providers from "./providers"; // 👈 แยกส่วน client ไปอีกไฟล์
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +16,7 @@ export const metadata = {
   title: "Programmatic",
   description: "Programmatic System",
   icons: {
-    icon: '/screen_icon_3.png',
+    icon: "/screen_icon_3.png",
   },
 };
 
@@ -26,10 +26,8 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
-        <main >
-          {children}
-        </main>
+        {/* ✅ ส่วนนี้เป็น Client Component */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

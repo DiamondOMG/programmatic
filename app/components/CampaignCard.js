@@ -43,7 +43,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
         </div>
 
         {/* ปุ่มแก้ไข/ลบตรงกลาง */}
-        {/* <div className="flex flex-col gap-2 flex-shrink-0">
+        <div className="flex flex-col gap-2 flex-shrink-0">
           <button
             onClick={() => onEdit(campaign.id)}
             className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
@@ -56,7 +56,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
           >
             <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
-        </div> */}
+        </div>
 
         {/* ข้อมูลด้านขวา */}
         <div className="flex-1 min-w-0">
