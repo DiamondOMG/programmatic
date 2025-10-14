@@ -51,6 +51,8 @@ const CampaignsPage = () => {
       description: item.condition || "ไม่มีคำอธิบาย",
       startDate: formatDate(item.startMillis),
       endDate: formatDate(item.endMillis),
+      startMillis: item.startMillis,
+      endMillis: item.endMillis,
       status: item.status,
       modifiedMillis: item.modifiedMillis
         ? formatDate(item.modifiedMillis)
@@ -148,24 +150,89 @@ const CampaignsPage = () => {
           <p className="text-red-500 text-center py-8">{error.message}</p>
         ) : (
           <>
-            <div className="flex flex-wrap gap-2 mb-8">
+            <div className="ml-2 flex gap-2 overflow-x-auto py-2 mb-8">
               {allData?.sequences.map((seqObj, index) => {
-                const key = Object.keys(seqObj)[0];
-                const value = seqObj[key];
-                const isActive = selectedSequenceId === value;
+                const seqName = Object.keys(seqObj)[0];
+                const seqId = seqObj[seqName];
+                const campaigns = allData?.groupedData[seqName] || [];
+                const formattedCampaigns = formatCampaignData(campaigns);
+
+                // 🔹 หาสถานะของ sequence
+                let status = "none";
+                if (formattedCampaigns.some((c) => c.status === "Running")) {
+                  status = "Running";
+                } else if (
+                  formattedCampaigns.some((c) => c.status === "Scheduled")
+                ) {
+                  status = "Scheduled";
+                } else if (
+                  formattedCampaigns.some((c) => c.status === "Completed")
+                ) {
+                  status = "Completed";
+                }
+
+                const isActive = selectedSequenceId === seqId;
+
+                const formatUnixToDDMMYYYY = (unixMillis) => {
+                  if (!unixMillis || isNaN(unixMillis)) return "none";
+                  const date = new Date(parseInt(unixMillis));
+                  const day = String(date.getDate()).padStart(2, "0");
+                  const month = String(date.getMonth() + 1).padStart(2, "0");
+                  const year = date.getFullYear();
+                  return `${day}/${month}/${year}`;
+                };
+
+                const startDate = formatUnixToDDMMYYYY(
+                  formattedCampaigns[0]?.startMillis
+                );
+                const endDate = formatUnixToDDMMYYYY(
+                  formattedCampaigns[0]?.endMillis
+                );
+
+                // 🔹 รูปตัวอย่าง
+                const imageUrl = formattedCampaigns[0]?.image || "";
+
+                // 🔹 วงกลมสี status
+                let statusColor = "bg-gray-400"; // default
+                if (status === "Running") statusColor = "bg-green-500";
+                else if (status === "Scheduled") statusColor = "bg-yellow-500";
+                else if (status === "Completed") statusColor = "bg-blue-500";
 
                 return (
-                  <button
+                  <div
                     key={index}
-                    onClick={() => handleSelectSequence(value)}
-                    className={`px-4 py-2 rounded shadow-md transition ${
-                      isActive
-                        ? "bg-blue-700 text-white"
-                        : "bg-blue-300 hover:bg-blue-400 text-gray-700"
+                    onClick={() => handleSelectSequence(seqId)}
+                    className={`flex-shrink-0 w-38 flex flex-col items-center bg-gray-100 rounded p-2 cursor-pointer ${
+                      isActive ? "ring-2 ring-blue-500" : ""
                     }`}
                   >
-                    {key}
-                  </button>
+                    {/* ชื่อ + status */}
+                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                      <span>{seqName}</span>
+                      <span
+                        className={`w-3 h-3 rounded-full ${statusColor}`}
+                        title={status}
+                      ></span>
+                    </div>
+
+                    {/* รูปตัวอย่าง */}
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={seqName}
+                        className="w-full h-20 object-cover rounded mb-1"
+                      />
+                    ) : (
+                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                        No Image
+                      </div>
+                    )}
+
+                    {/* วันที่ */}
+                    <div className="text-xs text-gray-600">
+                      {startDate} - {endDate}
+                    </div>
+                  </div>
                 );
               })}
             </div>
