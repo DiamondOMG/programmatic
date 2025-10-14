@@ -19,7 +19,7 @@ export async function getUserSequences() {
   const { data, error } = await supabase
     .from("sequence_users")
     .select("seq_id, sequence(seq_name)")
-    .eq("user_id", user.id);
+    // .eq("user_id", user.id);
 
   if (error) {
     return { success: false, message: `Supabase error: ${error.message}` };
