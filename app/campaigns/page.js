@@ -42,22 +42,34 @@ const CampaignsPage = () => {
 
   // 🔹 ฟังก์ชัน format ข้อมูลสำหรับแสดงผล
   const formatCampaignData = (items) => {
-    return items.map((item, index) => ({
-      id: item.libraryItemId || `item-${index}`,
-      image: item.blobId
-        ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}`
-        : "",
-      title: item.label || "ไม่มีชื่อ",
-      description: item.condition || "ไม่มีคำอธิบาย",
-      startDate: formatDate(item.startMillis),
-      endDate: formatDate(item.endMillis),
-      startMillis: item.startMillis,
-      endMillis: item.endMillis,
-      status: item.status,
-      modifiedMillis: item.modifiedMillis
-        ? formatDate(item.modifiedMillis)
-        : "ไม่มีข้อมูล",
-    }));
+    // สร้าง Set เพื่อเก็บ ID ที่เคยเห็นแล้ว
+    const seenIds = new Set();
+    
+    return items.map((item, index) => {
+      // สร้าง unique ID โดยรวม index เข้าไปด้วยถ้าเจอ ID ซ้ำ
+      let uniqueId = item.libraryItemId || `item-${index}`;
+      if (seenIds.has(uniqueId)) {
+        uniqueId = `${uniqueId}-${index}`; // เพิ่ม index ถ้าเจอ ID ซ้ำ
+      }
+      seenIds.add(uniqueId);
+      
+      return {
+        id: uniqueId,
+        image: item.blobId
+          ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}`
+          : "",
+        title: item.label || "ไม่มีชื่อ",
+        description: item.condition || "ไม่มีคำอธิบาย",
+        startDate: formatDate(item.startMillis),
+        endDate: formatDate(item.endMillis),
+        startMillis: item.startMillis,
+        endMillis: item.endMillis,
+        status: item.status,
+        modifiedMillis: item.modifiedMillis
+          ? formatDate(item.modifiedMillis)
+          : "ไม่มีข้อมูล",
+      };
+    });
   };
 
   // 🔹 ดึงข้อมูลทั้งหมดจาก get_sequence_all ด้วย React Query
@@ -91,14 +103,13 @@ const CampaignsPage = () => {
           [seqName]: groupedBySequence[seqName][0].seq_id,
         }));
 
-      // เซ็ต sequence แรกเป็น active และโหลดข้อมูล
-      if (sequencesArray.length > 0 && !selectedSequenceId) {
-        const firstSeqId = Object.values(sequencesArray[0])[0];
-        const firstSeqName = Object.keys(sequencesArray[0])[0];
-        setSelectedSequenceId(firstSeqId);
-        setFilteredCampaigns(
-          formatCampaignData(groupedBySequence[firstSeqName] || [])
-        );
+      // โหลดข้อมูลทั้งหมดจากทุก sequence
+      if (sequencesArray.length > 0) {
+        const allCampaigns = [];
+        Object.values(groupedBySequence).forEach(sequenceCampaigns => {
+          allCampaigns.push(...sequenceCampaigns);
+        });
+        setFilteredCampaigns(formatCampaignData(allCampaigns));
       }
 
       return { sequences: sequencesArray, groupedData: groupedBySequence };
