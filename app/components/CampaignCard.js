@@ -6,11 +6,11 @@ import signage_form from "../make_data/signage_form.js";
 export default function CampaignCard({ campaign, onEdit, onDelete }) {
   const getStatusColor = (status) => {
     switch (status) {
-      case "Active":
+      case "Running":
         return "bg-green-100 text-green-700";
-      case "Scheduled":
-        return "bg-blue-100 text-blue-700";
-      case "Draft":
+      case "Schedule":
+        return "bg-yellow-100 text-yellow-700";
+      case "Complete":
         return "bg-gray-100 text-gray-700";
       default:
         return "bg-gray-100 text-gray-700";

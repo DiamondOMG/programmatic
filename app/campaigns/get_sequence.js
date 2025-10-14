@@ -87,19 +87,14 @@ export async function get_sequence_all() {
 
   // วนลูปเรียก getSequenceById สำหรับแต่ละ sequence
   for (const sequence of sequences) {
-    // แปลง object เป็น array ของ [seq_name, seq_id]
     const [[seq_name, seq_id]] = Object.entries(sequence);
 
     try {
       const items = await getSequenceById(seq_id);
       if (items && items.length > 0) {
-        // เพิ่ม seq_name เข้าไปในแต่ละ item
-        const itemsWithSeqName = items.map((item) => ({
-          ...item,
-          seq_name: seq_name,
-          seq_id: seq_id,
-        }));
-        allItems.push(...itemsWithSeqName);
+        // คำนวณ status สำหรับแต่ละ item ใน sequence นี้
+        const itemsWithStatus = calculateStatusForItems(items, seq_name, seq_id);
+        allItems.push(...itemsWithStatus);
       }
     } catch (error) {
       console.error(`Error getting sequence ${seq_id}:`, error);
@@ -112,6 +107,108 @@ export async function get_sequence_all() {
     success: true,
     data: allItems,
     total_sequences: sequences.length,
-    total_items: allItems.length,
+    total_items: allItems.length
   };
+}
+
+function calculateStatusForItems(items, seqName, seqId) {
+  const now = Date.now();
+
+  // แยก items ที่มี startMillis และ endMillis ที่ถูกต้อง
+  const validItems = items.filter(item => {
+    const startMillis = (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || isNaN(parseInt(item.startMillis)))
+      ? null
+      : parseInt(item.startMillis);
+    const endMillis = (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "")
+      ? Infinity
+      : parseInt(item.endMillis);
+
+    return (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || !isNaN(parseInt(item.startMillis))) &&
+           (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "" || !isNaN(endMillis));
+  });
+
+  // หา items ที่เป็น Running (ตัวแรกที่ startMillis < now < endMillis)
+  const runningItems = validItems.filter(item => {
+    const startMillis = (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || isNaN(parseInt(item.startMillis)))
+      ? null
+      : parseInt(item.startMillis);
+    const endMillis = (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "")
+      ? Infinity
+      : parseInt(item.endMillis);
+
+    return startMillis !== null && startMillis < now && now < endMillis;
+  });
+
+  // หา items ที่เป็น Schedule
+  const scheduleItems = validItems.filter(item => {
+    const startMillis = (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || isNaN(parseInt(item.startMillis)))
+      ? null
+      : parseInt(item.startMillis);
+    const endMillis = (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "")
+      ? Infinity
+      : parseInt(item.endMillis);
+
+    return (startMillis === null && endMillis !== Infinity && endMillis >= now) || // ไม่มี start แต่ยังไม่สิ้นสุด
+           (startMillis !== null && now < startMillis && startMillis < endMillis) || // ยังไม่เริ่ม
+           (startMillis !== null && startMillis < now && now < endMillis && !runningItems.some(running => running.libraryItemId === item.libraryItemId)); // กำลังรันแต่ไม่ใช่ตัวแรก
+  });
+
+  // หา items ที่เป็น Complete
+  const completeItems = validItems.filter(item => {
+    const startMillis = (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || isNaN(parseInt(item.startMillis)))
+      ? null
+      : parseInt(item.startMillis);
+    const endMillis = (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "")
+      ? Infinity
+      : parseInt(item.endMillis);
+
+    return (startMillis !== null && startMillis < endMillis && endMillis < now) || // จบแล้วตามปกติ
+           (startMillis === null && endMillis !== Infinity && endMillis < now); // ไม่มี start แต่จบแล้ว
+  });
+
+  return items.map(item => {
+    const startMillis = (item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || isNaN(parseInt(item.startMillis)))
+      ? null  // ถ้าไม่มี startMillis ให้เป็น null แทน now
+      : parseInt(item.startMillis);
+    const endMillis = (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "")
+      ? Infinity
+      : parseInt(item.endMillis);
+
+    // กำหนด status ตามเงื่อนไข
+    let status = "Unknown";
+
+    if ((item.startMillis === null || item.startMillis === "null" || item.startMillis === undefined || item.startMillis === "" || !isNaN(parseInt(item.startMillis))) &&
+        (item.endMillis === null || item.endMillis === "null" || item.endMillis === undefined || item.endMillis === "" || !isNaN(endMillis))) {
+
+      // กรณีที่ไม่มี startMillis (เป็น null หรือไม่มีค่า)
+      if (startMillis === null) {
+        if (endMillis === Infinity) {
+          status = "Schedule"; // ไม่มีกำหนดสิ้นสุด ถือว่าเป็น Schedule
+        } else if (endMillis < now) {
+          status = "Complete"; // สิ้นสุดไปแล้ว ถือว่า Complete
+        } else {
+          status = "Schedule"; // ยังไม่สิ้นสุด ถือว่า Schedule
+        }
+      } else {
+        // กรณีที่มี startMillis ตามปกติ
+        if (startMillis < now && now < endMillis) {
+          // ตรวจสอบว่าเป็นตัวแรกใน seqName หรือไม่
+          const isFirstRunning = runningItems.length > 0 &&
+                                runningItems[0].libraryItemId === item.libraryItemId;
+          status = isFirstRunning ? "Running" : "Schedule";
+        } else if (now < startMillis && startMillis < endMillis) {
+          status = "Schedule";
+        } else if (startMillis < endMillis && endMillis < now) {
+          status = "Complete";
+        }
+      }
+    }
+
+    return {
+      ...item,
+      seq_name: seqName,
+      seq_id: seqId,
+      status: status
+    };
+  });
 }
