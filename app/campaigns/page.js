@@ -72,6 +72,7 @@ const CampaignsPage = () => {
           ? formatDate(item.modifiedMillis)
           : "ไม่มีข้อมูล",
         seq_name: item.seq_name,
+        email:item.email
       };
     });
   };

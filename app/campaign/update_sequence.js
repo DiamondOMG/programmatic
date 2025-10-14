@@ -1,5 +1,7 @@
 "use server";
 
+import { getCurrentUser } from "../lib/auth-actions";
+
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
 const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
@@ -33,7 +35,8 @@ export async function updateSequence(formData) {
         error: "ไม่พบข้อมูลการยืนยันตัวตนใน environment variables",
       };
     }
-
+    const user = await getCurrentUser();
+    console.log("user", user);
     // 🔹 สร้าง body สำหรับ PUT request
     const requestBody = {
       type: "libraryitem",
@@ -41,7 +44,8 @@ export async function updateSequence(formData) {
       data: {
         modifiedMillis: generateModifiedMillis(),
         condition: seq_condition,
-        label:seq_label
+        label:seq_label,
+        email_programmatic:user.user.email
       },
     };
     console.log("startDateTime", startDateTime);
