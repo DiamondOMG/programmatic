@@ -29,19 +29,6 @@ const CampaignsPage = () => {
     });
   };
 
-  // 🔹 ฟังก์ชันกำหนดสถานะจากวันที่
-  const getStatusFromDates = (startMillis, endMillis) => {
-    if (!startMillis || !endMillis) return "Draft";
-
-    const now = new Date().getTime();
-    const start = parseInt(startMillis);
-    const end = parseInt(endMillis);
-
-    if (now < start) return "Scheduled";
-    if (now >= start && now <= end) return "Active";
-    if (now > end) return "Completed";
-    return "Draft";
-  };
 
   // 🔹 ฟังก์ชัน format ข้อมูลสำหรับแสดงผล
   const formatCampaignData = (items) => {
@@ -61,8 +48,8 @@ const CampaignsPage = () => {
         image: item.blobId
           ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}`
           : "",
-        title: item.label || "ไม่มีชื่อ",
-        description: item.condition || "ไม่มีคำอธิบาย",
+        title: item.label || "No Title",
+        description: item.condition || "Global",
         startDate: formatDate(item.startMillis),
         endDate: formatDate(item.endMillis),
         startMillis: item.startMillis,
@@ -341,7 +328,7 @@ const CampaignsPage = () => {
             <div className="space-y-6">
               {filteredCampaigns.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">ไม่มีแคมเปญใน Sequence นี้</p>
+                  <p className="text-gray-600">No Campaigns Found</p>
                 </div>
               ) : (
                 <>

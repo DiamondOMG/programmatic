@@ -35,7 +35,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
           <h1 className="text-xl font-bold">{campaign.seq_name}</h1>
           <img
             src={campaign.image || "/placeholder-image.jpg"}
-            alt={campaign.title || "ไม่มีชื่อ"}
+            alt={campaign.title || "No Title"}
             className="w-32 h-24 object-cover rounded-lg shadow-sm"
             onError={(e) => {
               e.target.src = "/placeholder-image.jpg";
