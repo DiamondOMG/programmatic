@@ -46,13 +46,13 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
         {/* ปุ่มแก้ไข/ลบตรงกลาง */}
         <div className="flex flex-col gap-2 flex-shrink-0">
           <button
-            onClick={() => onEdit(campaign.id)}
+            onClick={() => onEdit(campaign.id,campaign.seq_id)}
             className="bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
           >
             <Pencil className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
           <button
-            onClick={() => onDelete(campaign.id)}
+            onClick={() => onDelete(campaign.id,campaign.seq_id)}
             className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
           >
             <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />

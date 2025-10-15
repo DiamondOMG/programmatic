@@ -82,6 +82,7 @@ function extractItems(data) {
         libraryItemId: d.libraryItemId || null,
         blobId: thumbResource?.data?.blobId || null,
         email: d.email_programmatic || null,
+        id: d.id_programmatic || null,
       };
     })
   );

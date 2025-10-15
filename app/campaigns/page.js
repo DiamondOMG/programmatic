@@ -13,8 +13,8 @@ const CampaignsPage = () => {
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
 
   const closeModal = () => setIsOpen(false);
-  const handleEdit = (id) => console.log("Edit campaign:", id);
-  const handleDelete = (id) => console.log("Delete campaign:", id);
+  const handleEdit = (id,seq_id) => console.log("Edit campaign id:", id," seq_id:",seq_id);
+  const handleDelete = (id,seq_id) => console.log("Delete campaign id:", id," seq_id:",seq_id);
 
   // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
   const formatDate = (timestamp) => {
@@ -44,7 +44,8 @@ const CampaignsPage = () => {
       seenIds.add(uniqueId);
 
       return {
-        id: uniqueId,
+        id: item.id || uniqueId,
+        seq_id: item.seq_id,
         image: item.blobId
           ? `https://d2cep6vins8x6z.blobstore.net/${item.blobId}`
           : "",
