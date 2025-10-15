@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import CampaignManagement from "../components/CampaignManagement";
 import CampaignCard from "../components/CampaignCard";
@@ -15,12 +15,55 @@ const CampaignsPage = () => {
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
   const [selectId, setSelectId] = useState(null);
   const [selectSeqId, setSelectSeqId] = useState(null);
+  const [message, setMessage] = useState(null); // State for API response message
+  const queryClient = useQueryClient();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const closeModal = () => setIsOpen(false);
-  const closeDeleteModal = () => setIsDeleteOpen(false);
+  const closeDeleteModal = () => {
+    setIsDeleteOpen(false);
+    setMessage(null); // Reset message when closing
+  };
   const handleEdit = (id, seq_id) =>
     console.log("Edit campaign id:", id, " seq_id:", seq_id);
-  const handleDelete = () => delItem(selectId, selectSeqId);
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await delItem(selectId, selectSeqId);
+      if (response.success) {
+        setMessage({ type: "success", text: response.message });
+        setFilteredCampaigns((prev) =>
+          prev.filter((campaign) => campaign.id !== selectId)
+        );
+        // Update React Query cache
+        queryClient.setQueryData(["sequences"], (oldData) => {
+          if (!oldData) return oldData;
+          const updatedGroupedData = { ...oldData.groupedData };
+          Object.keys(updatedGroupedData).forEach((seqName) => {
+            updatedGroupedData[seqName] = updatedGroupedData[seqName].filter(
+              (item) => item.id !== selectId
+            );
+            if (updatedGroupedData[seqName].length === 0) {
+              delete updatedGroupedData[seqName];
+            }
+          });
+          const updatedSequences = oldData.sequences.filter(
+            (seqObj) => updatedGroupedData[Object.keys(seqObj)[0]]
+          );
+          return {
+            sequences: updatedSequences,
+            groupedData: updatedGroupedData,
+          };
+        });
+      } else {
+        setMessage({ type: "error", text: response.error });
+      }
+    } catch (error) {
+      setMessage({ type: "error", text: "Unexpected error occurred" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
   const formatDate = (timestamp) => {
@@ -467,6 +510,7 @@ const CampaignsPage = () => {
                 onClick={closeDeleteModal}
                 className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
                 aria-label="Close"
+                disabled={isDeleting}
               >
                 <svg
                   className="h-5 w-5"
@@ -483,46 +527,114 @@ const CampaignsPage = () => {
                 </svg>
               </button>
 
-              {/* ไอคอนเตือน */}
-              <div className="flex justify-center mb-4">
-                <div className="bg-red-100 p-4 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-10 h-10 text-red-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 9v2m0 4h.01M12 3.75l8.25 14.25H3.75L12 3.75z"
-                    />
-                  </svg>
-                </div>
-              </div>
+              {/* Content */}
+              {!message ? (
+                <>
+                  {/* ไอคอนเตือน */}
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-red-100 p-4 rounded-full flex items-center justify-center">
+                      <svg
+                        className="w-10 h-10 text-red-600"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v2m0 4h.01M12 3.75l8.25 14.25H3.75L12 3.75z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
 
-              {/* ข้อความยืนยัน */}
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                Confirm Deletion
-              </h2>
+                  {/* ข้อความยืนยัน */}
+                  <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                    Confirm Deletion
+                  </h2>
+                  <p className="text-gray-600 mb-4">
+                    Are you sure you want to delete this item?
+                  </p>
 
-              {/* ปุ่มยืนยัน / ยกเลิก */}
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={closeDeleteModal}
-                  className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors shadow-sm"
-                >
-                  Delete
-                </button>
-              </div>
+                  {/* ปุ่มยืนยัน / ยกเลิก */}
+                  <div className="flex justify-center gap-3">
+                    <button
+                      onClick={closeDeleteModal}
+                      className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium transition-colors"
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors shadow-sm"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Message display */}
+                  <div className="flex justify-center mb-4">
+                    <div
+                      className={`p-4 rounded-full flex items-center justify-center ${
+                        message.type === "success"
+                          ? "bg-green-100"
+                          : "bg-red-100"
+                      }`}
+                    >
+                      <svg
+                        className={`w-10 h-10 ${
+                          message.type === "success"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        {message.type === "success" ? (
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        ) : (
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v2m0 4h.01M12 3.75l8.25 14.25H3.75L12 3.75z"
+                          />
+                        )}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Message text */}
+                  <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                    {message.type === "success"
+                      ? "Deletion Successful"
+                      : "Deletion Failed"}
+                  </h2>
+                  <p className="text-gray-600 mb-4">{message.text}</p>
+
+                  {/* OK button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={closeDeleteModal}
+                      className="px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors shadow-sm"
+                    >
+                      OK
+                    </button>
+                  </div>
+                </>
+              )}
             </DialogPanel>
           </div>
         </Dialog>

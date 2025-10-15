@@ -52,13 +52,9 @@ export async function delItem(id_programmatic,seq_id) {
         `Failed to delete item: ${response.status} ${response.statusText}`
       );
     }
-
-    const result = await response.json();
-
     return {
       success: true,
       message: "Delete Successfull",
-      data: result,
     };
   } catch (error) {
     console.error("Delete item error:", error);
