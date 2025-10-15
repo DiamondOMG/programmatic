@@ -21,7 +21,7 @@ function generateCreatedMillis() {
 }
 
 // API 1: สร้าง library item
-async function createLibraryItem(label) {
+export async function createLibraryItem(label) {
   const pendingId = generatePendingId();
   const createdMillis = generateCreatedMillis();
 
@@ -74,7 +74,7 @@ async function createLibraryItem(label) {
 }
 
 // API 2: Upload ไฟล์
-async function uploadFile(file, itemId, pendingId, fileName) {
+export async function uploadFile(file, itemId, pendingId, fileName) {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
   const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
@@ -90,7 +90,6 @@ async function uploadFile(file, itemId, pendingId, fileName) {
       "Content-Type": "content/unknown",
       "X-PendingId": pendingId,
       "X-ItemId": itemId,
-      Authorization: `Basic ${auth}`,
     },
     body: fileBuffer,
   });
@@ -107,7 +106,7 @@ async function uploadFile(file, itemId, pendingId, fileName) {
 }
 
 // ฟังก์ชันบันทึกข้อมูลลง library table
-async function createLibraryRecord(id, pendingId) {
+export async function createLibraryRecord(id, pendingId) {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
     // 📢 เพิ่ม Step ใน Error message

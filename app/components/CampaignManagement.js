@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { uploadAsset } from "../content/upload_library";
+import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
 import seq_table from "../make_data/seq_table";
