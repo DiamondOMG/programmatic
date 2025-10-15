@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "../lib/auth-actions";
+import { v4 as uuidv4 } from 'uuid';
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
@@ -20,7 +21,8 @@ export async function updateSequence(formData) {
     // const duration = formData.get("seq_duration");
     const duration = 1500;
     // 🔹 รับค่าจาก dropdown ใหม่
-    const seq_condition = formData.get("seq_condition") || "displayAspectRatio == \"1920x1080\"";
+    const seq_condition =
+      formData.get("seq_condition") || 'displayAspectRatio == "1920x1080"';
     const seq_slot = formData.get("seq_slot") || "1";
     const seq_item = formData.get("seq_item") || "1";
     const seq_label = formData.get("seq_label") || "";
@@ -37,6 +39,7 @@ export async function updateSequence(formData) {
     }
     const user = await getCurrentUser();
     console.log("user", user);
+    const programmaticId = uuidv4();
     // 🔹 สร้าง body สำหรับ PUT request
     const requestBody = {
       type: "libraryitem",
@@ -44,15 +47,17 @@ export async function updateSequence(formData) {
       data: {
         modifiedMillis: generateModifiedMillis(),
         condition: seq_condition,
-        label:seq_label,
-        email_programmatic:user.user.email
+        label: seq_label,
+        email_programmatic: user.user.email,
+        id_programmatic: programmaticId,
       },
     };
     console.log("startDateTime", startDateTime);
     console.log("endDateTime", endDateTime);
     // เพิ่มค่า optional
     if (startDateTime) requestBody.data.startMillis = startDateTime;
-    if (endDateTime && endDateTime !== "" && endDateTime !== "null") requestBody.data.endMillis = endDateTime;
+    if (endDateTime && endDateTime !== "" && endDateTime !== "null")
+      requestBody.data.endMillis = endDateTime;
     if (duration) requestBody.data.durationMillis = duration;
 
     // 🔹 Basic Auth
