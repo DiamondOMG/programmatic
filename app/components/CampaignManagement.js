@@ -5,7 +5,9 @@ import { uploadAsset } from "../content/upload_library";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
 import seq_table from "../make_data/seq_table";
+import { v4 as uuidv4 } from 'uuid';
 
+const programmaticId = uuidv4();
 // Constants
 const ENTERPRISE = "A";
 const DEFAULT_SEQ_CONDITION = 'displayAspectRatio == "1920x1080"';
@@ -157,6 +159,7 @@ export default function CombinedPage() {
       formData.append("seq_label", seq_label);
       formData.append("seq_condition", seq_condition);
       formData.append("seq_id", seq_id);
+      formData.append("programmaticId", programmaticId);
 
       const result = await updateSequence(formData);
     } catch (error) {

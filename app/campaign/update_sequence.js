@@ -1,7 +1,6 @@
 "use server";
 
 import { getCurrentUser } from "../lib/auth-actions";
-import { v4 as uuidv4 } from 'uuid';
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
@@ -19,7 +18,7 @@ export async function updateSequence(formData) {
     const startDateTime = formData.get("seq_startdate"); // รับเป็น UnixTime UTC แล้ว
     const endDateTime = formData.get("seq_enddate"); // รับเป็น UnixTime UTC แล้ว
     // const duration = formData.get("seq_duration");
-    const duration = 1500;
+    const duration = 15000;
     // 🔹 รับค่าจาก dropdown ใหม่
     const seq_condition =
       formData.get("seq_condition") || 'displayAspectRatio == "1920x1080"';
@@ -27,6 +26,7 @@ export async function updateSequence(formData) {
     const seq_item = formData.get("seq_item") || "1";
     const seq_label = formData.get("seq_label") || "";
     const seq_id = formData.get("seq_id") || "133DA4F113E159";
+    const programmaticId = formData.get("programmaticId") || "";
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
     const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${seq_id}/${seq_slot}/${seq_item}`;
@@ -39,7 +39,6 @@ export async function updateSequence(formData) {
     }
     const user = await getCurrentUser();
     console.log("user", user);
-    const programmaticId = uuidv4();
     // 🔹 สร้าง body สำหรับ PUT request
     const requestBody = {
       type: "libraryitem",
