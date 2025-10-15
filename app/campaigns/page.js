@@ -5,6 +5,7 @@ import { Dialog, DialogPanel } from "@headlessui/react";
 import CampaignManagement from "../components/CampaignManagement";
 import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all } from "./get_sequence";
+import { delItem } from "./del_item";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +15,7 @@ const CampaignsPage = () => {
 
   const closeModal = () => setIsOpen(false);
   const handleEdit = (id,seq_id) => console.log("Edit campaign id:", id," seq_id:",seq_id);
-  const handleDelete = (id,seq_id) => console.log("Delete campaign id:", id," seq_id:",seq_id);
+  const handleDelete = (id,seq_id) => delItem(id,seq_id);
 
   // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
   const formatDate = (timestamp) => {

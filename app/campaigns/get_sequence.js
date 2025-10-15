@@ -60,6 +60,64 @@ export async function getSequenceById(seq_id) {
   return extractItems(data);
 }
 
+export async function checkSequence(seq_id) {
+  const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
+    "base64"
+  );
+
+  const response = await fetch(
+    `https://stacks.targetr.net/rest-api/v1/sequences/${seq_id}`,
+    { headers: { Authorization: `Basic ${auth}` } }
+  );
+
+  const data = await response.json();
+  return data;
+}
+
+export async function checkStackItem(seq_id, id_programmatic) {
+  try {
+    // Fetch sequence data using the existing checkSequence function
+    const data = await checkSequence(seq_id);
+
+    // Validate data structure
+    if (!data || !data.stacks || !Array.isArray(data.stacks)) {
+      return { error: "Invalid sequence data or no stacks found" };
+    }
+
+    // Loop through stacks (0-based index)
+    for (let stackIndex = 0; stackIndex < data.stacks.length; stackIndex++) {
+      const stack = data.stacks[stackIndex];
+
+      // Check if stack has items
+      if (!stack.items || !Array.isArray(stack.items)) {
+        continue; // Skip if no items in this stack
+      }
+
+      // Loop through items in the current stack (0-based index)
+      for (let itemIndex = 0; itemIndex < stack.items.length; itemIndex++) {
+        const item = stack.items[itemIndex];
+
+        // Check if this item's id_programmatic matches
+        if (item.data && item.data.id_programmatic === id_programmatic) {
+          // Return 1-based indices and type_programmatic
+          return {
+            stack: stackIndex + 1,
+            item: itemIndex + 1,
+            found: true, // Optional: for confirmation
+            type_programmatic: item.data.type_programmatic,
+          };
+        }
+      }
+    }
+
+    // If not found after searching all stacks and items
+    return { error: "id_programmatic not found in sequence" };
+  } catch (error) {
+    // Handle errors (e.g., network issues or invalid seq_id)
+    return { error: `Error checking stack item: ${error.message}` };
+  }
+}
+
 // ✅ ดึงข้อมูล items จาก stacks
 function extractItems(data) {
   if (!data || !Array.isArray(data.stacks)) return [];
