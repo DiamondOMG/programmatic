@@ -9,13 +9,18 @@ import { delItem } from "./del_item";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedSequenceId, setSelectedSequenceId] = useState(null);
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
+  const [selectId, setSelectId] = useState(null);
+  const [selectSeqId, setSelectSeqId] = useState(null);
 
   const closeModal = () => setIsOpen(false);
-  const handleEdit = (id,seq_id) => console.log("Edit campaign id:", id," seq_id:",seq_id);
-  const handleDelete = (id,seq_id) => delItem(id,seq_id);
+  const closeDeleteModal = () => setIsDeleteOpen(false);
+  const handleEdit = (id, seq_id) =>
+    console.log("Edit campaign id:", id, " seq_id:", seq_id);
+  const handleDelete = () => delItem(selectId, selectSeqId);
 
   // 🔹 ฟังก์ชันแปลง timestamp เป็นวันที่
   const formatDate = (timestamp) => {
@@ -29,7 +34,6 @@ const CampaignsPage = () => {
       year: "numeric",
     });
   };
-
 
   // 🔹 ฟังก์ชัน format ข้อมูลสำหรับแสดงผล
   const formatCampaignData = (items) => {
@@ -61,7 +65,7 @@ const CampaignsPage = () => {
           ? formatDate(item.modifiedMillis)
           : "ไม่มีข้อมูล",
         seq_name: item.seq_name,
-        email:item.email
+        email: item.email,
       };
     });
   };
@@ -350,7 +354,9 @@ const CampaignsPage = () => {
                             <CampaignCard
                               campaign={campaign}
                               onEdit={handleEdit}
-                              onDelete={handleDelete}
+                              onDelete={() => setIsDeleteOpen(true)}
+                              selectId={setSelectId}
+                              selectSeqId={setSelectSeqId}
                             />
                           </div>
                         ))}
@@ -373,7 +379,9 @@ const CampaignsPage = () => {
                             <CampaignCard
                               campaign={campaign}
                               onEdit={handleEdit}
-                              onDelete={handleDelete}
+                              onDelete={() => setIsDeleteOpen(true)}
+                              selectId={setSelectId}
+                              selectSeqId={setSelectSeqId}
                             />
                           </div>
                         ))}
@@ -396,7 +404,9 @@ const CampaignsPage = () => {
                             <CampaignCard
                               campaign={campaign}
                               onEdit={handleEdit}
-                              onDelete={handleDelete}
+                              onDelete={() => setIsDeleteOpen(true)}
+                              selectId={setSelectId}
+                              selectSeqId={setSelectSeqId}
                             />
                           </div>
                         ))}
@@ -434,6 +444,84 @@ const CampaignsPage = () => {
               </button>
               <div className="h-full">
                 <CampaignManagement />
+              </div>
+            </DialogPanel>
+          </div>
+        </Dialog>
+        {/* Modal */}
+        <Dialog
+          open={isDeleteOpen}
+          onClose={closeDeleteModal}
+          className="relative z-50"
+        >
+          {/* ฉากหลังเบลอและมืด */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <DialogPanel className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl text-center">
+              {/* ปุ่มปิดมุมขวา */}
+              <button
+                onClick={closeDeleteModal}
+                className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+                aria-label="Close"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* ไอคอนเตือน */}
+              <div className="flex justify-center mb-4">
+                <div className="bg-red-100 p-4 rounded-full flex items-center justify-center">
+                  <svg
+                    className="w-10 h-10 text-red-600"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v2m0 4h.01M12 3.75l8.25 14.25H3.75L12 3.75z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* ข้อความยืนยัน */}
+              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                Confirm Deletion
+              </h2>
+
+              {/* ปุ่มยืนยัน / ยกเลิก */}
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={closeDeleteModal}
+                  className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-medium transition-colors shadow-sm"
+                >
+                  Delete
+                </button>
               </div>
             </DialogPanel>
           </div>

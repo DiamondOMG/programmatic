@@ -3,7 +3,7 @@ import { Pencil, Trash2 } from "lucide-react";
 import signage_form from "../make_data/signage_form.js";
 
 // Component Card แยกออกมา
-export default function CampaignCard({ campaign, onEdit, onDelete }) {
+export default function CampaignCard({ campaign, onEdit, onDelete ,selectId,selectSeqId}) {
   const getStatusColor = (status) => {
     switch (status) {
       case "Running":
@@ -52,7 +52,11 @@ export default function CampaignCard({ campaign, onEdit, onDelete }) {
             <Pencil className="w-5 h-5 group-hover:scale-110 transition-transform" />
           </button>
           <button
-            onClick={() => onDelete(campaign.id,campaign.seq_id)}
+            onClick={() => {
+              selectId(campaign.id);       // ✅ เก็บ id ของแคมเปญ
+              selectSeqId(campaign.seq_id); // ✅ เก็บ seq_id
+              onDelete(); 
+            }}
             className="bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600 text-white p-2 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md group"
           >
             <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
