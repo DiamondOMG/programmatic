@@ -30,6 +30,7 @@ export async function createLibraryItem(label) {
     data: {
       label: label,
       apiTest: "true",
+      transitionShader: "none",
     },
     resources: [
       {
