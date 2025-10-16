@@ -7,6 +7,7 @@ import signage_form from "../make_data/signage_form";
 import seq_table from "../make_data/seq_table";
 import { v4 as uuidv4 } from "uuid";
 
+const programmaticId = uuidv4();
 // Constants
 const ENTERPRISE = "A";
 const DEFAULT_SEQ_CONDITION = 'displayAspectRatio == "1920x1080"';
@@ -145,7 +146,6 @@ export default function CombinedPage() {
   // ฟังก์ชัน trigger อัปเดตแคมเปญอัตโนมัติหลัง upload สำเร็จ
   const triggerAutoCampaignUpdate = async (libraryId, contentName) => {
     try {
-      const programmaticId = uuidv4();
       const formData = new FormData();
       formData.append("libraryId", libraryId);
       formData.append(
@@ -160,6 +160,7 @@ export default function CombinedPage() {
       formData.append("seq_condition", seq_condition);
       formData.append("seq_id", seq_id);
       formData.append("programmaticId", programmaticId);
+
       await updateSequence(formData);
     } catch (error) {
       // Error auto-updating campaign
