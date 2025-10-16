@@ -4,9 +4,13 @@ import { createLibraryItem, createLibraryRecord } from "./upload_library.js";
 
 // ฟังก์ชัน upload ไฟล์ฝั่ง client
 async function uploadFile(file, itemId, pendingId, fileName) {
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  // โค้ดนี้ยังคงอยู่ และสร้าง Buffer ใน Browser เหมือนเดิม
+  const fileBuffer = Buffer.from(await file.arrayBuffer()); // 🎯 เปลี่ยนปลายทางให้ชี้ไปที่ Express Proxy Service
 
-  const response = await fetch("https://stacks.targetr.net/upload", {
+  const EC2_PROXY_URL = "https://assets.actmedia.com/upload"; // เปลี่ยนเป็น localhost:5000
+
+  const response = await fetch(EC2_PROXY_URL, {
+    // ใช้ URL ใหม่
     method: "POST",
     headers: {
       "X-UploadType": "raw",

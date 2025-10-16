@@ -77,9 +77,9 @@ export async function createLibraryItem(label) {
 export async function uploadFile(file, itemId, pendingId, fileName) {
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
-  const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
-    "base64"
-  );
+  // const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
+  //   "base64"
+  // );
 
   const response = await fetch("https://stacks.targetr.net/upload", {
     method: "POST",
