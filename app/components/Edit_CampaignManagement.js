@@ -68,8 +68,9 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
     formData.append("programmaticId", campaign.id); // ใช้ id เดิมเป็น programmaticId (หากมีจริงค่อยปรับ)
     formData.append("seq_startdate", convertToUnixTime(seq_startdate));
     formData.append("seq_enddate", convertToUnixTime(seq_enddate));
-    const debugObject = Object.fromEntries(formData.entries());
-    return console.log("🧾 formData values:", debugObject);
+    formData.append("libraryItemId", campaign.libraryItemId);
+    // const debugObject = Object.fromEntries(formData.entries());
+    // return console.log("🧾 formData values:", debugObject);
 
     startTransition(async () => {
       try {

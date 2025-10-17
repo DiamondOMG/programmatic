@@ -15,7 +15,7 @@ function generateModifiedMillis() {
 // Main server action สำหรับ update sequence
 export async function updateCampaign(formData) {
   try {
-    const libraryId = formData.get("libraryId");
+    const libraryId = formData.get("libraryItemId");
     const startDateTime = formData.get("seq_startdate"); // รับเป็น UnixTime UTC แล้ว
     const endDateTime = formData.get("seq_enddate"); // รับเป็น UnixTime UTC แล้ว
     // const duration = formData.get("seq_duration");
@@ -61,10 +61,10 @@ export async function updateCampaign(formData) {
         label: seq_label,
         email_programmatic: user.user.email,
         id_programmatic: programmaticId,
+        apiTest: "true",
+        libraryItemId: libraryId,
       },
     };
-    console.log("startDateTime", startDateTime);
-    console.log("endDateTime", endDateTime);
     // เพิ่มค่า optional
     if (startDateTime) requestBody.data.startMillis = startDateTime;
     if (endDateTime && endDateTime !== "" && endDateTime !== "null")

@@ -111,6 +111,7 @@ const CampaignsPage = () => {
           : "ไม่มีข้อมูล",
         seq_name: item.seq_name,
         email: item.email,
+        libraryItemId: item.libraryItemId,
       };
     });
   };
