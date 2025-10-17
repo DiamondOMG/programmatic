@@ -3,6 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -174,15 +175,20 @@ export async function getCurrentUser() {
     const accessToken = cookieStore.get("access_token")?.value;
 
     if (!accessToken) {
-      throw new Error("ไม่มี session");
+      // This will trigger a server-side redirect
+      redirect("/");
     }
 
     const { data, error } = await supabase.auth.getUser(accessToken);
-    if (error) throw new Error(error.message);
+    if (error) {
+      // This will trigger a server-side redirect
+      redirect("/");
+    }
 
     return { success: true, user: data.user };
   } catch (error) {
-    return { success: false, message: error.message };
+    // This will trigger a server-side redirect
+    redirect("/");
   }
 }
 
