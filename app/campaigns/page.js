@@ -32,36 +32,22 @@ const CampaignsPage = () => {
       const response = await delItem(selectId, selectSeqId);
       if (response.success) {
         setMessage({ type: "success", text: response.message });
-        setFilteredCampaigns((prev) =>
-          prev.filter((campaign) => campaign.id !== selectId)
-        );
-        // Update React Query cache
-        queryClient.setQueryData(["sequences"], (oldData) => {
-          if (!oldData) return oldData;
-          const updatedGroupedData = { ...oldData.groupedData };
-          Object.keys(updatedGroupedData).forEach((seqName) => {
-            updatedGroupedData[seqName] = updatedGroupedData[seqName].filter(
-              (item) => item.id !== selectId
-            );
-            if (updatedGroupedData[seqName].length === 0) {
-              delete updatedGroupedData[seqName];
-            }
-          });
-          const updatedSequences = oldData.sequences.filter(
-            (seqObj) => updatedGroupedData[Object.keys(seqObj)[0]]
-          );
-          return {
-            sequences: updatedSequences,
-            groupedData: updatedGroupedData,
-          };
-        });
+        // Invalidate queries to refetch the latest data
+        await queryClient.invalidateQueries(['sequences']);
       } else {
         setMessage({ type: "error", text: response.error });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Unexpected error occurred" });
+      setMessage({ 
+        type: "error", 
+        text: error.message || "Unexpected error occurred" 
+      });
     } finally {
       setIsDeleting(false);
+      // Close the delete modal after a short delay to show success message
+      if (message?.type === 'success') {
+        setTimeout(closeDeleteModal, 1500);
+      }
     }
   };
 

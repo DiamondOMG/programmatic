@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
 import seq_table from "../make_data/seq_table";
 import { v4 as uuidv4 } from "uuid";
 
-const programmaticId = uuidv4();
 // Constants
 const ENTERPRISE = "A";
 const DEFAULT_SEQ_CONDITION = 'displayAspectRatio == "1920x1080"';
@@ -25,6 +25,8 @@ function convertToUnixTime(dateTimeString) {
 }
 
 export default function CombinedPage() {
+  const queryClient = useQueryClient();
+
   // Content Upload States
   const [contentFile, setContentFile] = useState(null);
   const [isContentDragOver, setIsContentDragOver] = useState(false);
@@ -146,6 +148,7 @@ export default function CombinedPage() {
   // ฟังก์ชัน trigger อัปเดตแคมเปญอัตโนมัติหลัง upload สำเร็จ
   const triggerAutoCampaignUpdate = async (libraryId, contentName) => {
     try {
+      const programmaticId = uuidv4();
       const formData = new FormData();
       formData.append("libraryId", libraryId);
       formData.append(
@@ -162,8 +165,15 @@ export default function CombinedPage() {
       formData.append("programmaticId", programmaticId);
 
       await updateSequence(formData);
+
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries(["campaigns"]);
+      setContentMessage("Campaign updated successfully");
+      setContentMessageType("success");
     } catch (error) {
-      // Error auto-updating campaign
+      setContentMessage(error.message || "Error updating campaign");
+      setContentMessageType("error");
+      throw error; // Re-throw to be caught by the parent try-catch
     }
   };
 

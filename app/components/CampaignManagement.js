@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
@@ -24,6 +25,8 @@ function convertToUnixTime(dateTimeString) {
 }
 
 export default function CombinedPage() {
+  const queryClient = useQueryClient();
+  
   // Content Upload States
   const [contentFile, setContentFile] = useState(null);
   const [isContentDragOver, setIsContentDragOver] = useState(false);
@@ -160,9 +163,17 @@ export default function CombinedPage() {
       formData.append("seq_condition", seq_condition);
       formData.append("seq_id", seq_id);
       formData.append("programmaticId", programmaticId);
+      
       await updateSequence(formData);
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries(['campaigns']);
+      setContentMessage("Campaign updated successfully");
+      setContentMessageType("success");
     } catch (error) {
-      // Error auto-updating campaign
+      setContentMessage(error.message || "Error updating campaign");
+      setContentMessageType("error");
+      throw error; // Re-throw to be caught by the parent try-catch
     }
   };
 
