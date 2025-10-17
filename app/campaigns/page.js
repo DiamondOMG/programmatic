@@ -112,6 +112,7 @@ const CampaignsPage = () => {
         seq_name: item.seq_name,
         email: item.email,
         libraryItemId: item.libraryItemId,
+        type_programmatic: item.type_programmatic,
       };
     });
   };

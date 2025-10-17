@@ -16,17 +16,28 @@ const DEFAULT_SEQ_SLOT = "1";
 const DEFAULT_SEQ_ITEM = "1";
 const DEFAULT_SEQ_DURATION = "15000";
 
-// ฟังก์ชันแปลง datetime-local เป็น UnixTime UTC (ลบ 7 ชมสำหรับไทย timezone)
-function convertToUnixTime(dateTimeString) {
-  if (!dateTimeString) return null;
-  const date = new Date(dateTimeString);
+// ฟังก์ชันแปลง date เป็น UnixTime UTC
+// สำหรับ startdate: บวก 5 นาที (00:05)
+// สำหรับ enddate: บวก 23 ชม 55 นาที (23:55)
+function convertToUnixTime(dateString, isEndDate = false) {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+
+  if (isEndDate) {
+    // End date: ตั้งเวลาเป็น 23:55
+    date.setHours(23, 55, 0, 0);
+  } else {
+    // Start date: ตั้งเวลาเป็น 00:05
+    date.setHours(0, 5, 0, 0);
+  }
+
   const utcTime = date.getTime();
   return utcTime.toString();
 }
 
 export default function CombinedPage() {
   const queryClient = useQueryClient();
-  
+
   // Content Upload States
   const [contentFile, setContentFile] = useState(null);
   const [isContentDragOver, setIsContentDragOver] = useState(false);
@@ -45,20 +56,17 @@ export default function CombinedPage() {
   const [seq_duration, setseq_duration] = useState(DEFAULT_SEQ_DURATION);
   const [seq_label, setseq_label] = useState("");
 
-  // Format date to yyyy-MM-ddTHH:mm for input[type="datetime-local"]
+  // Format date to yyyy-MM-dd for input[type="date"]
   const formatDateForInput = (date) => {
     if (!date) return "";
     const d = new Date(date);
     const pad = (num) => num.toString().padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
-      d.getDate()
-    )}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   };
 
-  // Set default start date to 00:00 AM of current day when component mounts
+  // Set default start date to current day when component mounts
   useEffect(() => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
     setseq_startdate(formatDateForInput(today));
   }, []);
 
@@ -153,9 +161,12 @@ export default function CombinedPage() {
       formData.append("libraryId", libraryId);
       formData.append(
         "seq_startdate",
-        convertToUnixTime(seq_startdate || new Date())
+        convertToUnixTime(seq_startdate || new Date(), false)
       );
-      formData.append("seq_enddate", convertToUnixTime(seq_enddate || ""));
+      formData.append(
+        "seq_enddate",
+        convertToUnixTime(seq_enddate || "", true)
+      );
       formData.append("seq_duration", seq_duration);
       formData.append("seq_slot", seq_slot);
       formData.append("seq_item", seq_item);
@@ -163,17 +174,17 @@ export default function CombinedPage() {
       formData.append("seq_condition", seq_condition);
       formData.append("seq_id", seq_id);
       formData.append("programmaticId", programmaticId);
-      
+
       await updateSequence(formData);
-      
+
       // Invalidate queries to refresh data
-      await queryClient.invalidateQueries(['campaigns']);
+      await queryClient.invalidateQueries(["campaigns"]);
       setContentMessage("Campaign updated successfully");
       setContentMessageType("success");
     } catch (error) {
       setContentMessage(error.message || "Error updating campaign");
       setContentMessageType("error");
-      throw error; // Re-throw to be caught by the parent try-catch
+      throw error;
     }
   };
 
@@ -256,15 +267,13 @@ export default function CombinedPage() {
                 Start Date (Optional)
               </label>
               <input
-                type="datetime-local"
-                id="startDateTime"
+                type="date"
+                id="startDate"
                 className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 value={
                   seq_startdate ? seq_startdate : formatDateForInput(new Date())
                 }
-                min={formatDateForInput(
-                  new Date(new Date().setHours(0, 0, 0, 0))
-                )}
+                min={formatDateForInput(new Date())}
                 onChange={(e) => setseq_startdate(e.target.value)}
               />
             </div>
@@ -277,8 +286,8 @@ export default function CombinedPage() {
                 End Date (Optional)
               </label>
               <input
-                type="datetime-local"
-                id="endDateTime"
+                type="date"
+                id="endDate"
                 className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 value={seq_enddate}
                 min={
@@ -384,7 +393,6 @@ export default function CombinedPage() {
         </button>
       </div>
 
-      {/* Padding bottom เพื่อให้เนื้อหาไม่ชิดขอบล่างเมื่อเลื่อน scrollbar */}
       <div className="pb-2"></div>
     </div>
   );

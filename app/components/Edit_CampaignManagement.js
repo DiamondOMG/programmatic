@@ -2,24 +2,32 @@
 
 import { useState, useEffect, useTransition } from "react";
 import signage_form from "../make_data/signage_form";
-import { updateCampaign } from "../campaign/update_campaign"; // ✅ import server action
+import { updateCampaign } from "../campaign/update_campaign";
 
-
-// ฟังก์ชันแปลง datetime-local → UnixTime (string)
-function convertToUnixTime(dateTimeString) {
-  if (!dateTimeString) return null;
-  const date = new Date(dateTimeString);
+// ฟังก์ชันแปลง date เป็น UnixTime UTC
+// สำหรับ startdate: บวก 5 นาที (00:05)
+// สำหรับ enddate: บวก 23 ชม 55 นาที (23:55)
+function convertToUnixTime(dateString, isEndDate = false) {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  
+  if (isEndDate) {
+    // End date: ตั้งเวลาเป็น 23:55
+    date.setHours(23, 55, 0, 0);
+  } else {
+    // Start date: ตั้งเวลาเป็น 00:05
+    date.setHours(0, 5, 0, 0);
+  }
+  
   return date.getTime().toString();
 }
 
-// ฟังก์ชันแปลง UnixTime → datetime-local format
+// ฟังก์ชันแปลง UnixTime → date format (yyyy-MM-dd)
 function formatDateForInput(unixTime) {
   if (!unixTime) return "";
   const d = new Date(parseInt(unixTime, 10));
   const pad = (n) => n.toString().padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
-  )}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 export default function EditCampaignManagement({ campaign, onSuccess }) {
@@ -61,16 +69,14 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
     setMessage("");
 
     const formData = new FormData();
-    formData.append("libraryId", campaign.id); // ใช้ id เป็น libraryId
+    formData.append("libraryId", campaign.id);
     formData.append("seq_label", seq_label);
     formData.append("seq_condition", seq_condition);
     formData.append("seq_id", seq_id);
-    formData.append("programmaticId", campaign.id); // ใช้ id เดิมเป็น programmaticId (หากมีจริงค่อยปรับ)
-    formData.append("seq_startdate", convertToUnixTime(seq_startdate));
-    formData.append("seq_enddate", convertToUnixTime(seq_enddate));
+    formData.append("programmaticId", campaign.id);
+    formData.append("seq_startdate", convertToUnixTime(seq_startdate, false));
+    formData.append("seq_enddate", convertToUnixTime(seq_enddate, true));
     formData.append("libraryItemId", campaign.libraryItemId);
-    // const debugObject = Object.fromEntries(formData.entries());
-    // return console.log("🧾 formData values:", debugObject);
 
     startTransition(async () => {
       try {
@@ -93,10 +99,6 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         {/* LEFT PANEL */}
         <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
-            Edit Campaign
-          </h2>
-
           <form onSubmit={handleSubmit} className="space-y-3 flex-1">
             {/* Campaign Name */}
             <div>
@@ -148,7 +150,7 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
                 Start Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 value={seq_startdate}
                 onChange={(e) => setSeqStartDate(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -161,7 +163,7 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
                 End Date
               </label>
               <input
-                type="datetime-local"
+                type="date"
                 value={seq_enddate}
                 onChange={(e) => setSeqEndDate(e.target.value)}
                 className="mt-1 block w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -195,9 +197,6 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
 
         {/* RIGHT PANEL: IMAGE */}
         <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 text-center">
-            Preview Image
-          </h2>
           {image ? (
             <img
               src={image}
