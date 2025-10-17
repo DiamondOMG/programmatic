@@ -28,7 +28,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
   };
 
   // ✅ เช็คว่าควรแสดงปุ่มหรือไม่
-  const shouldShowButtons = campaign.type_programmatic !== "default";
+  const shouldShowButtons = campaign.title !== "Default";
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-blue-100">
