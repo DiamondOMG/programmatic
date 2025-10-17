@@ -1,6 +1,7 @@
 "use server";
 
 import { getCurrentUser } from "../lib/auth-actions";
+import { checkStackItem } from "../campaigns/get_sequence";
 
 // อ่าน environment variables สำหรับ Basic Auth
 const STACKS_USERNAME = process.env.STACKS_USERNAME;
@@ -27,14 +28,25 @@ export async function updateCampaign(formData) {
     const programmaticId = formData.get("programmaticId") || "";
 
     const checkCampaign = await checkStackItem(seq_id, programmaticId);
+    if ( checkCampaign.stack === null || checkCampaign.item === null ) {
+      return {
+        success: false,
+        error: "No Campaign Data for Update",
+      };
+    }else if ( checkCampaign.type_programmatic === "default") {
+      return {
+        success: false,
+        error: "Cannot Update Default Campaign",
+      };
+    }
 
     // 🔹 ประกอบ URL แบบ dynamic ตามค่าที่เลือก
-    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${seq_id}/${seq_slot}/${seq_item}`;
+    const SEQUENCE_API_URL = `https://stacks.targetr.net/rest-api/v1/op/sequence/${seq_id}/${checkCampaign.stack}/${checkCampaign.item}`;
 
     if (!STACKS_USERNAME || !STACKS_PASSWORD) {
       return {
         success: false,
-        error: "ไม่พบข้อมูลการยืนยันตัวตนใน environment variables",
+        error: "No Auth Data",
       };
     }
     const user = await getCurrentUser();
@@ -63,10 +75,10 @@ export async function updateCampaign(formData) {
     const auth = Buffer.from(`${STACKS_USERNAME}:${STACKS_PASSWORD}`).toString(
       "base64"
     );
-    console.log("requestBody", requestBody, SEQUENCE_API_URL);
+    console.log("requestBody", requestBody, "SEQUENCE_API_URL ",SEQUENCE_API_URL);
     // 🔹 ส่งคำขอ PUT ไปยัง API
     const response = await fetch(SEQUENCE_API_URL, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Basic ${auth}`,
@@ -84,17 +96,17 @@ export async function updateCampaign(formData) {
 
     return {
       success: true,
-      message: "อัปเดต sequence สำเร็จ",
+      message: "Update Campaign Success",
       data: result,
     };
   } catch (error) {
-    console.error("Update sequence error:", error);
+    console.error("Update Campaign error:", error);
     return {
       success: false,
       error:
         error instanceof Error
           ? error.message
-          : "เกิดข้อผิดพลาดในการอัปเดต sequence",
+          : "Update Campaign Error",
     };
   }
 }

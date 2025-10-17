@@ -6,6 +6,7 @@ import CampaignManagement from "../components/CampaignManagement";
 import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all } from "./get_sequence";
 import { delItem } from "./del_item";
+import EditCampaignManagement from "../components/Edit_CampaignManagement";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,14 +19,29 @@ const CampaignsPage = () => {
   const [message, setMessage] = useState(null); // State for API response message
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState(null);
 
   const closeModal = () => setIsOpen(false);
   const closeDeleteModal = () => {
     setIsDeleteOpen(false);
     setMessage(null); // Reset message when closing
   };
-  const handleEdit = (id, seq_id) =>
-    console.log("Edit campaign id:", id, " seq_id:", seq_id);
+  const closeEditModal = () => {
+    setIsEditOpen(false);
+    setEditingCampaign(null);
+  };
+
+  // Update the handleEdit function
+  const handleEdit = (id, seq_id) => {
+    const campaignToEdit = filteredCampaigns.find(
+      (c) => c.id === id && c.seq_id === seq_id
+    );
+    if (campaignToEdit) {
+      setEditingCampaign(campaignToEdit);
+      setIsEditOpen(true);
+    }
+  };
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
@@ -33,19 +49,19 @@ const CampaignsPage = () => {
       if (response.success) {
         setMessage({ type: "success", text: response.message });
         // Invalidate queries to refetch the latest data
-        await queryClient.invalidateQueries(['sequences']);
+        await queryClient.invalidateQueries(["sequences"]);
       } else {
         setMessage({ type: "error", text: response.error });
       }
     } catch (error) {
-      setMessage({ 
-        type: "error", 
-        text: error.message || "Unexpected error occurred" 
+      setMessage({
+        type: "error",
+        text: error.message || "Unexpected error occurred",
       });
     } finally {
       setIsDeleting(false);
       // Close the delete modal after a short delay to show success message
-      if (message?.type === 'success') {
+      if (message?.type === "success") {
         setTimeout(closeDeleteModal, 1500);
       }
     }
@@ -620,6 +636,38 @@ const CampaignsPage = () => {
                     </button>
                   </div>
                 </>
+              )}
+            </DialogPanel>
+          </div>
+        </Dialog>
+        <Dialog
+          open={isEditOpen}
+          onClose={closeEditModal}
+          className="relative z-50"
+        >
+          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <div className="fixed inset-0 flex items-center justify-center p-4">
+            <DialogPanel className="w-full max-w-4xl rounded-xl bg-white p-6">
+              <div className="flex items-center justify-between mb-4 ">
+                <div className="flex-1"></div>
+                <h2 className="text-xl font-bold text-center">Edit Campaign</h2>
+                <div className="flex-1 flex justify-end">
+                  <button
+                    onClick={closeEditModal}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+              {editingCampaign && (
+                <EditCampaignManagement
+                  campaign={editingCampaign}
+                  onSuccess={() => {
+                    queryClient.invalidateQueries(["sequences"]);
+                    closeEditModal();
+                  }}
+                />
               )}
             </DialogPanel>
           </div>
