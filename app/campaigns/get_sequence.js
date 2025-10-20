@@ -118,6 +118,22 @@ export async function checkStackItem(seq_id, id_programmatic) {
   }
 }
 
+export async function checkMaxCreate(seq_id, max_create) {
+  try {
+    const data = await checkSequence(seq_id);
+
+    if (!data || !data.stacks || !Array.isArray(data.stacks) || data.stacks.length === 0) {
+      return { error: "Invalid sequence data or no stacks found" };
+    }
+
+    const firstStackItems = data.stacks[0].items || [];
+    return firstStackItems.length > max_create;
+
+  } catch (error) {
+    return { error: `Error checking max create: ${error.message}` };
+  }
+}
+
 // ✅ ดึงข้อมูล items จาก stacks
 function extractItems(data) {
   if (!data || !Array.isArray(data.stacks)) return [];

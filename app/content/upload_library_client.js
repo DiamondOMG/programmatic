@@ -1,6 +1,7 @@
 "use client";
 
 import { createLibraryItem, createLibraryRecord } from "./upload_library.js";
+import { checkMaxCreate } from "../campaigns/get_sequence";
 
 // ฟังก์ชัน upload ไฟล์ฝั่ง client
 async function uploadFile(file, itemId, pendingId, fileName) {
@@ -35,13 +36,25 @@ async function uploadFile(file, itemId, pendingId, fileName) {
 }
 
 // Main client-side function
-export async function uploadAsset(formData) {
+export async function uploadAsset(formData, seq_id) {
   try {
     const label = formData.get("label");
     const file = formData.get("file");
-
     if (!label || !file) {
       return { success: false, error: "Please fill in label and select file" };
+    }
+
+    // Step 0: Check max create
+    try {
+      console.log("Starting Step 0: checkMaxCreate");
+      const maxCreateExceeded = await checkMaxCreate(seq_id, 5);
+      if (maxCreateExceeded) {
+        return { success: false, error: "This Spot is already full. please delete some campaign." };
+      }
+      console.log("Step 0 success. Max create limit not exceeded.");
+    } catch (e) {
+      console.error("Error in Step 0:", e);
+      throw e;
     }
 
     let id, pendingId;
