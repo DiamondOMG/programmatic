@@ -7,8 +7,9 @@ async function uploadFile(file, itemId, pendingId, fileName) {
   // โค้ดนี้ยังคงอยู่ และสร้าง Buffer ใน Browser เหมือนเดิม
   const fileBuffer = Buffer.from(await file.arrayBuffer()); // 🎯 เปลี่ยนปลายทางให้ชี้ไปที่ Express Proxy Service
 
-  const EC2_PROXY_URL = "https://assets.actmedia.com/upload"; // เปลี่ยนเป็น localhost:5000
-
+  // const EC2_PROXY_URL = "https://assets.actmedia.com/upload";
+  const EC2_PROXY_URL = "https://assets.actmedia.com/upload-go";
+  // const EC2_PROXY_URL = "http://localhost:5001/upload-go"; // เปลี่ยนเป็น localhost:5000
   const response = await fetch(EC2_PROXY_URL, {
     // ใช้ URL ใหม่
     method: "POST",
