@@ -7,6 +7,7 @@ import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
+import signage_form from "../make_data/signage_form";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -268,85 +269,78 @@ const CampaignsPage = () => {
                     <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
                       <span className="font-bold underline">{seqName}</span>
                     </div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>TV Signage</span>
-                      <span
-                        className={`w-3 h-3 rounded-full ${statusColor}`}
-                        title={status}
-                      ></span>
-                    </div>
 
-                    {/* รูปตัวอย่าง */}
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={seqName}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Campaign
-                      </div>
-                    )}
+                    {/* Dynamic sections based on signage_form */}
+                    {Object.keys(signage_form).map((formKey, formIndex) => {
+                      // หา campaigns ทั้งหมดที่ match กับ format นี้
+                      const campaignsForForm = formattedCampaigns.filter(
+                        (c) => c.seq_form === formKey
+                      );
 
-                    {/* วันที่ */}
-                    <div className="text-xs text-gray-600">
-                      {startDate} - {endDate}
-                    </div>
-                    {/* Divider */}
-                    <div className="w-full h-px bg-gray-300 my-2"></div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>Kiosk</span>
-                      <span
-                        className={`w-3 h-3 rounded-full ${statusColor}`}
-                        title={status}
-                      ></span>
-                    </div>
+                      // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
+                      let firstCampaign =
+                        campaignsForForm.length > 0
+                          ? campaignsForForm[0]
+                          : null;
 
-                    {/* รูปตัวอย่าง */}
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={seqName}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Campaign
-                      </div>
-                    )}
+                      // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
+                      if (!firstCampaign) {
+                        firstCampaign = formattedCampaigns.find(
+                          (c) => c.seq_form === "Global"
+                        );
+                      }
 
-                    {/* วันที่ */}
-                    <div className="text-xs text-gray-600">
-                      {startDate} - {endDate}
-                    </div>
-                    {/* Divider */}
-                    <div className="w-full h-px bg-gray-300 my-2"></div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>Category Signage</span>
-                      <span
-                        className={`w-3 h-3 rounded-full ${statusColor}`}
-                        title={status}
-                      ></span>
-                    </div>
+                      // คำนวณ status และสีสำหรับ format นี้
+                      let formStatus = firstCampaign?.status || "none";
+                      let formStatusColor = "bg-gray-400";
+                      if (formStatus === "Running")
+                        formStatusColor = "bg-green-500";
+                      else if (formStatus === "Schedule")
+                        formStatusColor = "bg-yellow-500";
+                      else if (formStatus === "Complete")
+                        formStatusColor = "bg-blue-500";
 
-                    {/* รูปตัวอย่าง */}
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={seqName}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Campaign
-                      </div>
-                    )}
+                      const formStartDate = firstCampaign
+                        ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
+                        : "none";
+                      const formEndDate = firstCampaign
+                        ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
+                        : "none";
+                      const formImageUrl = firstCampaign?.image || "";
 
-                    {/* วันที่ */}
-                    <div className="text-xs text-gray-600">
-                      {startDate} - {endDate}
-                    </div>
+                      return (
+                        <div key={formKey}>
+                          {formIndex > 0 && (
+                            <div className="w-full h-px bg-gray-300 my-2"></div>
+                          )}
+                          <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                            <span>{formKey}</span>
+                            <span
+                              className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                              title={formStatus}
+                            ></span>
+                          </div>
+
+                          {/* รูปตัวอย่าง */}
+                          {formImageUrl ? (
+                            <img
+                              src={formImageUrl}
+                              alt={seqName}
+                              className="w-full h-20 object-cover rounded mb-1"
+                            />
+                          ) : (
+                            <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                              No Campaign
+                            </div>
+                          )}
+
+                          {/* วันที่ */}
+                          <div className="text-xs text-gray-600">
+                            {formStartDate} - {formEndDate}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}

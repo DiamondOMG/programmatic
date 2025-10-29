@@ -122,13 +122,17 @@ export async function checkMaxCreate(seq_id, max_create) {
   try {
     const data = await checkSequence(seq_id);
 
-    if (!data || !data.stacks || !Array.isArray(data.stacks) || data.stacks.length === 0) {
+    if (
+      !data ||
+      !data.stacks ||
+      !Array.isArray(data.stacks) ||
+      data.stacks.length === 0
+    ) {
       return { error: "Invalid sequence data or no stacks found" };
     }
 
     const firstStackItems = data.stacks[0].items || [];
     return firstStackItems.length > max_create;
-
   } catch (error) {
     return { error: `Error checking max create: ${error.message}` };
   }
@@ -204,10 +208,18 @@ function calculateStatusForItems(items, seqName, seqId) {
     );
   });
 
-  const runningItems = validItems.filter((item) => {
+  // จัดกลุ่ม running items ตาม form
+  const runningItemsByForm = {};
+  validItems.forEach((item) => {
     const startMillis = toMillis(item.startMillis);
     const endMillis = toMillis(item.endMillis, Infinity);
-    return startMillis !== null && startMillis < now && now < endMillis;
+    if (startMillis !== null && startMillis < now && now < endMillis) {
+      const form = item.form_programmatic || "Global";
+      if (!runningItemsByForm[form]) {
+        runningItemsByForm[form] = [];
+      }
+      runningItemsByForm[form].push(item);
+    }
   });
 
   return items.map((item) => {
@@ -221,9 +233,11 @@ function calculateStatusForItems(items, seqName, seqId) {
       else status = "Schedule";
     } else {
       if (startMillis < now && now < endMillis) {
-        const isFirstRunning =
-          runningItems[0]?.libraryItemId === item.libraryItemId;
-        status = isFirstRunning ? "Running" : "Schedule";
+        // เช็คว่าเป็น running item แรกของ form นี้หรือไม่
+        const form = item.form_programmatic || "Global";
+        const isFirstRunningInForm =
+          runningItemsByForm[form]?.[0]?.libraryItemId === item.libraryItemId;
+        status = isFirstRunningInForm ? "Running" : "Schedule";
       } else if (now < startMillis && startMillis < endMillis) {
         status = "Schedule";
       } else if (startMillis < endMillis && endMillis < now) {
