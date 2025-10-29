@@ -4,6 +4,7 @@ const signage_form = {
     "Kiosk 43":"displayAspectRatio == \"1080x1920\"",
     "Kiosk 55":"displayAspectRatio == \"1080x1920\"",
     "Category Signage":"displayAspectRatio == \"1920x540\"",
+    "Pillar Signage":"displayAspectRatio == \"1080x1920\""
 }
 
 export default signage_form;
