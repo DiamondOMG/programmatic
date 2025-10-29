@@ -22,6 +22,7 @@ const CampaignsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState(null);
+  const [showAllSpots, setShowAllSpots] = useState(false); // Toggle state for showing all spots
 
   const closeModal = () => setIsOpen(false);
   const closeDeleteModal = () => {
@@ -188,9 +189,21 @@ const CampaignsPage = () => {
     <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-blue-200 to-cyan-50 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Campaign Management
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-gray-800">
+              Campaign Management
+            </h1>
+            <button
+              onClick={() => setShowAllSpots(!showAllSpots)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                showAllSpots
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {showAllSpots ? "Hide Details" : "Show All Spot"}
+            </button>
+          </div>
           <button
             onClick={() => setIsOpen(true)}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
@@ -271,76 +284,148 @@ const CampaignsPage = () => {
                     </div>
 
                     {/* Dynamic sections based on signage_form */}
-                    {Object.keys(signage_form).map((formKey, formIndex) => {
-                      // หา campaigns ทั้งหมดที่ match กับ format นี้
-                      const campaignsForForm = formattedCampaigns.filter(
-                        (c) => c.seq_form === formKey
-                      );
-
-                      // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
-                      let firstCampaign =
-                        campaignsForForm.length > 0
-                          ? campaignsForForm[0]
-                          : null;
-
-                      // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
-                      if (!firstCampaign) {
-                        firstCampaign = formattedCampaigns.find(
-                          (c) => c.seq_form === "Global"
+                    {showAllSpots ? (
+                      // Show All Spot: แสดงทุก format
+                      Object.keys(signage_form).map((formKey, formIndex) => {
+                        // หา campaigns ทั้งหมดที่ match กับ format นี้
+                        const campaignsForForm = formattedCampaigns.filter(
+                          (c) => c.seq_form === formKey
                         );
-                      }
 
-                      // คำนวณ status และสีสำหรับ format นี้
-                      let formStatus = firstCampaign?.status || "none";
-                      let formStatusColor = "bg-gray-400";
-                      if (formStatus === "Running")
-                        formStatusColor = "bg-green-500";
-                      else if (formStatus === "Schedule")
-                        formStatusColor = "bg-yellow-500";
-                      else if (formStatus === "Complete")
-                        formStatusColor = "bg-blue-500";
+                        // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
+                        let firstCampaign =
+                          campaignsForForm.length > 0
+                            ? campaignsForForm[0]
+                            : null;
 
-                      const formStartDate = firstCampaign
-                        ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
-                        : "none";
-                      const formEndDate = firstCampaign
-                        ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
-                        : "none";
-                      const formImageUrl = firstCampaign?.image || "";
+                        // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
+                        if (!firstCampaign) {
+                          firstCampaign = formattedCampaigns.find(
+                            (c) => c.seq_form === "Global"
+                          );
+                        }
 
-                      return (
-                        <div key={formKey}>
-                          {formIndex > 0 && (
-                            <div className="w-full h-px bg-gray-300 my-2"></div>
-                          )}
-                          <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                            <span>{formKey}</span>
-                            <span
-                              className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                              title={formStatus}
-                            ></span>
-                          </div>
+                        // คำนวณ status และสีสำหรับ format นี้
+                        let formStatus = firstCampaign?.status || "none";
+                        let formStatusColor = "bg-gray-400";
+                        if (formStatus === "Running")
+                          formStatusColor = "bg-green-500";
+                        else if (formStatus === "Schedule")
+                          formStatusColor = "bg-yellow-500";
+                        else if (formStatus === "Complete")
+                          formStatusColor = "bg-blue-500";
 
-                          {/* รูปตัวอย่าง */}
-                          {formImageUrl ? (
-                            <img
-                              src={formImageUrl}
-                              alt={seqName}
-                              className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
-                            />
-                          ) : (
-                            <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                              No Campaign
+                        const formStartDate = firstCampaign
+                          ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
+                          : "none";
+                        const formEndDate = firstCampaign
+                          ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
+                          : "none";
+                        const formImageUrl = firstCampaign?.image || "";
+
+                        return (
+                          <div key={formKey}>
+                            {formIndex > 0 && (
+                              <div className="w-full h-px bg-gray-300 my-2"></div>
+                            )}
+                            <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                              <span>{formKey}</span>
+                              <span
+                                className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                title={formStatus}
+                              ></span>
                             </div>
-                          )}
 
-                          {/* วันที่ */}
-                          <div className="text-xs text-gray-600">
-                            {formStartDate} - {formEndDate}
+                            {/* รูปตัวอย่าง */}
+                            {formImageUrl ? (
+                              <img
+                                src={formImageUrl}
+                                alt={seqName}
+                                className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
+                              />
+                            ) : (
+                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                                No Campaign
+                              </div>
+                            )}
+
+                            {/* วันที่ */}
+                            <div className="text-xs text-gray-600">
+                              {formStartDate} - {formEndDate}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    ) : (
+                      // Default: แสดงแค่ campaign ล่าสุด
+                      (() => {
+                        // หา campaign ล่าสุด (modifiedMillis สูงสุด)
+                        const latestCampaign = formattedCampaigns.reduce(
+                          (latest, current) => {
+                            if (!latest) return current;
+                            const latestModified = parseInt(
+                              latest.modifiedMillis || "0"
+                            );
+                            const currentModified = parseInt(
+                              current.modifiedMillis || "0"
+                            );
+                            return currentModified > latestModified
+                              ? current
+                              : latest;
+                          },
+                          null
+                        );
+
+                        if (!latestCampaign) return null;
+
+                        const formStatus = latestCampaign.status || "none";
+                        let formStatusColor = "bg-gray-400";
+                        if (formStatus === "Running")
+                          formStatusColor = "bg-green-500";
+                        else if (formStatus === "Schedule")
+                          formStatusColor = "bg-yellow-500";
+                        else if (formStatus === "Complete")
+                          formStatusColor = "bg-blue-500";
+
+                        const formStartDate = formatUnixToDDMMYYYY(
+                          latestCampaign.startMillis
+                        );
+                        const formEndDate = formatUnixToDDMMYYYY(
+                          latestCampaign.endMillis
+                        );
+                        const formImageUrl = latestCampaign.image || "";
+
+                        return (
+                          <div>
+                            <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                              <span>{latestCampaign.seq_form}</span>
+                              <span
+                                className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                title={formStatus}
+                              ></span>
+                            </div>
+
+                            {/* รูปตัวอย่าง */}
+                            {formImageUrl ? (
+                              <img
+                                src={formImageUrl}
+                                alt={seqName}
+                                className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
+                              />
+                            ) : (
+                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                                No Campaign
+                              </div>
+                            )}
+
+                            {/* วันที่ */}
+                            <div className="text-xs text-gray-600">
+                              {formStartDate} - {formEndDate}
+                            </div>
+                          </div>
+                        );
+                      })()
+                    )}
                   </div>
                 );
               })}
