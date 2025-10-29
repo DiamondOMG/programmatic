@@ -157,6 +157,7 @@ function extractItems(data) {
         blobId: thumbResource?.data?.blobId || null,
         email: d.email_programmatic || null,
         id: d.id_programmatic || null,
+        form_programmatic: d.form_programmatic || null,
       };
     })
   );

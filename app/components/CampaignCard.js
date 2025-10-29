@@ -76,7 +76,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
                 {campaign.title}
               </h3>
               <p className="text-gray-600 text-sm line-clamp-1">
-                {getLabelFromCondition(campaign.description)}
+                {campaign.seq_form}
               </p>
             </div>
             <span

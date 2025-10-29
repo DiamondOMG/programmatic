@@ -113,6 +113,7 @@ const CampaignsPage = () => {
         email: item.email,
         libraryItemId: item.libraryItemId,
         type_programmatic: item.type_programmatic,
+        seq_form: item.form_programmatic || "Global",
       };
     });
   };
