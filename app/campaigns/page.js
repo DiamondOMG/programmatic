@@ -326,7 +326,7 @@ const CampaignsPage = () => {
                             <img
                               src={formImageUrl}
                               alt={seqName}
-                              className="w-full h-20 object-cover rounded mb-1"
+                              className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
                             />
                           ) : (
                             <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">

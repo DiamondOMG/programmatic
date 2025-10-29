@@ -39,7 +39,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
           <img
             src={campaign.image || "/placeholder-image.jpg"}
             alt={campaign.title || "No Title"}
-            className="w-32 h-24 object-cover rounded-lg shadow-sm"
+            className="w-32 h-24 object-contain object-center rounded mb-1 bg-gray-100"
             onError={(e) => {
               e.target.src = "/placeholder-image.jpg";
             }}
