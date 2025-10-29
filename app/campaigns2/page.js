@@ -212,7 +212,6 @@ const CampaignsPage = () => {
                 const seqId = seqObj[seqName];
                 const campaigns = allData?.groupedData[seqName] || [];
                 const formattedCampaigns = formatCampaignData(campaigns);
-                console.log("formattedCampaigns:", formattedCampaigns);
 
                 // 🔹 หาสถานะของ sequence
                 let status = "none";
@@ -265,64 +264,7 @@ const CampaignsPage = () => {
                   >
                     {/* ชื่อ + status */}
                     <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span className="font-bold underline">{seqName}</span>
-                    </div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>TV Signage</span>
-                      <span
-                        className={`w-3 h-3 rounded-full ${statusColor}`}
-                        title={status}
-                      ></span>
-                    </div>
-
-                    {/* รูปตัวอย่าง */}
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={seqName}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Campaign
-                      </div>
-                    )}
-
-                    {/* วันที่ */}
-                    <div className="text-xs text-gray-600">
-                      {startDate} - {endDate}
-                    </div>
-                    {/* Divider */}
-                    <div className="w-full h-px bg-gray-300 my-2"></div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>Kiosk</span>
-                      <span
-                        className={`w-3 h-3 rounded-full ${statusColor}`}
-                        title={status}
-                      ></span>
-                    </div>
-
-                    {/* รูปตัวอย่าง */}
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={seqName}
-                        className="w-full h-20 object-cover rounded mb-1"
-                      />
-                    ) : (
-                      <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                        No Campaign
-                      </div>
-                    )}
-
-                    {/* วันที่ */}
-                    <div className="text-xs text-gray-600">
-                      {startDate} - {endDate}
-                    </div>
-                    {/* Divider */}
-                    <div className="w-full h-px bg-gray-300 my-2"></div>
-                    <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                      <span>Category Signage</span>
+                      <span>{seqName}</span>
                       <span
                         className={`w-3 h-3 rounded-full ${statusColor}`}
                         title={status}
