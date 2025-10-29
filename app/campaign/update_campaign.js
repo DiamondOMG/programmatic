@@ -23,6 +23,7 @@ export async function updateCampaign(formData) {
     // 🔹 รับค่าจาก dropdown ใหม่
     const seq_condition =
       formData.get("seq_condition") || 'displayAspectRatio == "1920x1080"';
+    const seq_form = formData.get("seq_form") || "TV Signage 43";
     const seq_label = formData.get("seq_label") || "";
     const seq_id = formData.get("seq_id") || "133DA4F113E159";
     const programmaticId = formData.get("programmaticId") || "";
@@ -63,6 +64,7 @@ export async function updateCampaign(formData) {
         id_programmatic: programmaticId,
         apiTest: "true",
         libraryItemId: libraryId,
+        form_programmatic: seq_form,
       },
     };
     // เพิ่มค่า optional

@@ -22,6 +22,7 @@ export async function updateSequence(formData) {
     // 🔹 รับค่าจาก dropdown ใหม่
     const seq_condition =
       formData.get("seq_condition") || 'displayAspectRatio == "1920x1080"';
+    const seq_form = formData.get("seq_form") || "TV Signage 43";
     const seq_slot = formData.get("seq_slot") || "1";
     const seq_item = formData.get("seq_item") || "1";
     const seq_label = formData.get("seq_label") || "";
@@ -49,6 +50,7 @@ export async function updateSequence(formData) {
         label: seq_label,
         email_programmatic: user.user.email,
         id_programmatic: programmaticId,
+        form_programmatic: seq_form,
       },
     };
     console.log("startDateTime", startDateTime);

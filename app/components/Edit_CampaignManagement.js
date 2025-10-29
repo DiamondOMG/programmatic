@@ -10,7 +10,7 @@ import { updateCampaign } from "../campaign/update_campaign";
 function convertToUnixTime(dateString, isEndDate = false) {
   if (!dateString) return null;
   const date = new Date(dateString);
-  
+
   if (isEndDate) {
     // End date: ตั้งเวลาเป็น 23:55
     date.setHours(23, 55, 0, 0);
@@ -18,7 +18,7 @@ function convertToUnixTime(dateString, isEndDate = false) {
     // Start date: ตั้งเวลาเป็น 00:05
     date.setHours(0, 5, 0, 0);
   }
-  
+
   return date.getTime().toString();
 }
 
@@ -33,6 +33,7 @@ function formatDateForInput(unixTime) {
 export default function EditCampaignManagement({ campaign, onSuccess }) {
   console.log("campaign", campaign);
   const [seq_label, setSeqLabel] = useState("");
+  const [seq_form, setSeqForm] = useState("");
   const [seq_condition, setSeqCondition] = useState("");
   const [seq_name, setSeqName] = useState("");
   const [seq_id, setSeqId] = useState("");
@@ -54,9 +55,10 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
       const matchedConditionKey = Object.keys(signage_form).find(
         (key) => signage_form[key] === campaign.description
       );
-      setSeqCondition(
-        matchedConditionKey ? signage_form[matchedConditionKey] : ""
-      );
+      if (matchedConditionKey) {
+        setSeqForm(matchedConditionKey);
+        setSeqCondition(signage_form[matchedConditionKey]);
+      }
 
       setSeqStartDate(formatDateForInput(campaign.startMillis));
       setSeqEndDate(formatDateForInput(campaign.endMillis));
@@ -71,6 +73,7 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
     const formData = new FormData();
     formData.append("libraryId", campaign.id);
     formData.append("seq_label", seq_label);
+    formData.append("seq_form", seq_form);
     formData.append("seq_condition", seq_condition);
     formData.append("seq_id", seq_id);
     formData.append("programmaticId", campaign.id);
@@ -119,12 +122,16 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
                 Format *
               </label>
               <select
-                value={seq_condition}
-                onChange={(e) => setSeqCondition(e.target.value)}
+                value={seq_form}
+                onChange={(e) => {
+                  const selectedForm = e.target.value;
+                  setSeqForm(selectedForm);
+                  setSeqCondition(signage_form[selectedForm]);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {Object.keys(signage_form).map((option) => (
-                  <option key={option} value={signage_form[option]}>
+                  <option key={option} value={option}>
                     {option}
                   </option>
                 ))}

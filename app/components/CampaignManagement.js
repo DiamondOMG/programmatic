@@ -47,6 +47,7 @@ export default function CombinedPage() {
   const contentFileInputRef = useRef(null);
 
   // Campaign States
+  const [seq_form, setseq_form] = useState("TV Signage 43");
   const [seq_condition, setseq_condition] = useState(DEFAULT_SEQ_CONDITION);
   const [seq_id, setseq_id] = useState(DEFAULT_SEQ_ID);
   const [seq_slot, setseq_slot] = useState(DEFAULT_SEQ_SLOT);
@@ -116,7 +117,7 @@ export default function CombinedPage() {
       formData.append("label", fileNameWithEnterprise);
       formData.append("file", contentFile);
 
-      const result = await uploadAsset(formData,seq_id);
+      const result = await uploadAsset(formData, seq_id);
 
       if (result.success) {
         setContentMessage(result.message);
@@ -171,6 +172,7 @@ export default function CombinedPage() {
       formData.append("seq_slot", seq_slot);
       formData.append("seq_item", seq_item);
       formData.append("seq_label", seq_label);
+      formData.append("seq_form", seq_form);
       formData.append("seq_condition", seq_condition);
       formData.append("seq_id", seq_id);
       formData.append("programmaticId", programmaticId);
@@ -223,13 +225,17 @@ export default function CombinedPage() {
               </label>
               <select
                 id="signage-form"
-                value={seq_condition}
-                onChange={(e) => setseq_condition(e.target.value)}
+                value={seq_form}
+                onChange={(e) => {
+                  const selectedForm = e.target.value;
+                  setseq_form(selectedForm);
+                  setseq_condition(signage_form[selectedForm]);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={false}
               >
                 {Object.keys(signage_form).map((option) => (
-                  <option key={option} value={signage_form[option]}>
+                  <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
