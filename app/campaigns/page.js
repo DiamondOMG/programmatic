@@ -13,7 +13,9 @@ const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFormFilterOpen, setIsFormFilterOpen] = useState(false);
   const [selectedSequenceId, setSelectedSequenceId] = useState(null);
+  const [selectedFormFilter, setSelectedFormFilter] = useState(null);
   const [filteredCampaigns, setFilteredCampaigns] = useState([]);
   const [selectId, setSelectId] = useState(null);
   const [selectSeqId, setSelectSeqId] = useState(null);
@@ -193,23 +195,25 @@ const CampaignsPage = () => {
             <h1 className="text-3xl font-bold text-gray-800">
               Campaign Management
             </h1>
+          </div>
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setShowAllSpots(!showAllSpots)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 showAllSpots
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  ? "bg-gray-400 text-white hover:bg-gray-500"
+                  : "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
               }`}
             >
               {showAllSpots ? "Hide Details" : "Show All Spot"}
             </button>
+            <button
+              onClick={() => setIsOpen(true)}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+            >
+              Add Campaign
+            </button>
           </div>
-          <button
-            onClick={() => setIsOpen(true)}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-          >
-            Add Campaign
-          </button>
         </div>
 
         {/* 🔹 แสดง UI การโหลดหรือปุ่ม Spot และรายการแคมเปญ */}
@@ -284,164 +288,194 @@ const CampaignsPage = () => {
                     </div>
 
                     {/* Dynamic sections based on signage_form */}
-                    {showAllSpots ? (
-                      // Show All Spot: แสดงทุก format
-                      Object.keys(signage_form).map((formKey, formIndex) => {
-                        // หา campaigns ทั้งหมดที่ match กับ format นี้
-                        const campaignsForForm = formattedCampaigns.filter(
-                          (c) => c.seq_form === formKey
-                        );
-
-                        // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
-                        let firstCampaign =
-                          campaignsForForm.length > 0
-                            ? campaignsForForm[0]
-                            : null;
-
-                        // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
-                        if (!firstCampaign) {
-                          firstCampaign = formattedCampaigns.find(
-                            (c) => c.seq_form === "Global"
+                    {showAllSpots
+                      ? // Show All Spot: แสดงทุก format
+                        Object.keys(signage_form).map((formKey, formIndex) => {
+                          // หา campaigns ทั้งหมดที่ match กับ format นี้
+                          const campaignsForForm = formattedCampaigns.filter(
+                            (c) => c.seq_form === formKey
                           );
-                        }
 
-                        // คำนวณ status และสีสำหรับ format นี้
-                        let formStatus = firstCampaign?.status || "none";
-                        let formStatusColor = "bg-gray-400";
-                        if (formStatus === "Running")
-                          formStatusColor = "bg-green-500";
-                        else if (formStatus === "Schedule")
-                          formStatusColor = "bg-yellow-500";
-                        else if (formStatus === "Complete")
-                          formStatusColor = "bg-blue-500";
+                          // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
+                          let firstCampaign =
+                            campaignsForForm.length > 0
+                              ? campaignsForForm[0]
+                              : null;
 
-                        const formStartDate = firstCampaign
-                          ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
-                          : "none";
-                        const formEndDate = firstCampaign
-                          ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
-                          : "none";
-                        const formImageUrl = firstCampaign?.image || "";
-
-                        return (
-                          <div key={formKey}>
-                            {formIndex > 0 && (
-                              <div className="w-full h-px bg-gray-300 my-2"></div>
-                            )}
-                            <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                              <span>{formKey}</span>
-                              <span
-                                className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                                title={formStatus}
-                              ></span>
-                            </div>
-
-                            {/* รูปตัวอย่าง */}
-                            {formImageUrl ? (
-                              <img
-                                src={formImageUrl}
-                                alt={seqName}
-                                className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
-                              />
-                            ) : (
-                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                                No Campaign
-                              </div>
-                            )}
-
-                            {/* วันที่ */}
-                            <div className="text-xs text-gray-600">
-                              {formStartDate} - {formEndDate}
-                            </div>
-                          </div>
-                        );
-                      })
-                    ) : (
-                      // Default: แสดงแค่ campaign ล่าสุด
-                      (() => {
-                        // หา campaign ล่าสุด (modifiedMillis สูงสุด)
-                        const latestCampaign = formattedCampaigns.reduce(
-                          (latest, current) => {
-                            if (!latest) return current;
-                            const latestModified = parseInt(
-                              latest.modifiedMillis || "0"
+                          // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
+                          if (!firstCampaign) {
+                            firstCampaign = formattedCampaigns.find(
+                              (c) => c.seq_form === "Global"
                             );
-                            const currentModified = parseInt(
-                              current.modifiedMillis || "0"
-                            );
-                            return currentModified > latestModified
-                              ? current
-                              : latest;
-                          },
-                          null
-                        );
+                          }
 
-                        if (!latestCampaign) return null;
+                          // คำนวณ status และสีสำหรับ format นี้
+                          let formStatus = firstCampaign?.status || "none";
+                          let formStatusColor = "bg-gray-400";
+                          if (formStatus === "Running")
+                            formStatusColor = "bg-green-500";
+                          else if (formStatus === "Schedule")
+                            formStatusColor = "bg-yellow-500";
+                          else if (formStatus === "Complete")
+                            formStatusColor = "bg-blue-500";
 
-                        const formStatus = latestCampaign.status || "none";
-                        let formStatusColor = "bg-gray-400";
-                        if (formStatus === "Running")
-                          formStatusColor = "bg-green-500";
-                        else if (formStatus === "Schedule")
-                          formStatusColor = "bg-yellow-500";
-                        else if (formStatus === "Complete")
-                          formStatusColor = "bg-blue-500";
+                          const formStartDate = firstCampaign
+                            ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
+                            : "none";
+                          const formEndDate = firstCampaign
+                            ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
+                            : "none";
+                          const formImageUrl = firstCampaign?.image || "";
 
-                        const formStartDate = formatUnixToDDMMYYYY(
-                          latestCampaign.startMillis
-                        );
-                        const formEndDate = formatUnixToDDMMYYYY(
-                          latestCampaign.endMillis
-                        );
-                        const formImageUrl = latestCampaign.image || "";
-
-                        return (
-                          <div>
-                            <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                              <span>{latestCampaign.seq_form}</span>
-                              <span
-                                className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                                title={formStatus}
-                              ></span>
-                            </div>
-
-                            {/* รูปตัวอย่าง */}
-                            {formImageUrl ? (
-                              <img
-                                src={formImageUrl}
-                                alt={seqName}
-                                className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
-                              />
-                            ) : (
-                              <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                                No Campaign
+                          return (
+                            <div key={formKey}>
+                              {formIndex > 0 && (
+                                <div className="w-full h-px bg-gray-300 my-2"></div>
+                              )}
+                              <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                                <span>{formKey}</span>
+                                <span
+                                  className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                  title={formStatus}
+                                ></span>
                               </div>
-                            )}
 
-                            {/* วันที่ */}
-                            <div className="text-xs text-gray-600">
-                              {formStartDate} - {formEndDate}
+                              {/* รูปตัวอย่าง */}
+                              {formImageUrl ? (
+                                <img
+                                  src={formImageUrl}
+                                  alt={seqName}
+                                  className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
+                                />
+                              ) : (
+                                <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                                  No Campaign
+                                </div>
+                              )}
+
+                              {/* วันที่ */}
+                              <div className="text-xs text-gray-600">
+                                {formStartDate} - {formEndDate}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()
-                    )}
+                          );
+                        })
+                      : // Default: แสดงแค่ campaign ล่าสุด
+                        (() => {
+                          // หา campaign ล่าสุด (modifiedMillis สูงสุด)
+                          const latestCampaign = formattedCampaigns.reduce(
+                            (latest, current) => {
+                              if (!latest) return current;
+                              const latestModified = parseInt(
+                                latest.modifiedMillis || "0"
+                              );
+                              const currentModified = parseInt(
+                                current.modifiedMillis || "0"
+                              );
+                              return currentModified > latestModified
+                                ? current
+                                : latest;
+                            },
+                            null
+                          );
+
+                          if (!latestCampaign) return null;
+
+                          const formStatus = latestCampaign.status || "none";
+                          let formStatusColor = "bg-gray-400";
+                          if (formStatus === "Running")
+                            formStatusColor = "bg-green-500";
+                          else if (formStatus === "Schedule")
+                            formStatusColor = "bg-yellow-500";
+                          else if (formStatus === "Complete")
+                            formStatusColor = "bg-blue-500";
+
+                          const formStartDate = formatUnixToDDMMYYYY(
+                            latestCampaign.startMillis
+                          );
+                          const formEndDate = formatUnixToDDMMYYYY(
+                            latestCampaign.endMillis
+                          );
+                          const formImageUrl = latestCampaign.image || "";
+
+                          return (
+                            <div>
+                              <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                                <span>{latestCampaign.seq_form}</span>
+                                <span
+                                  className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                  title={formStatus}
+                                ></span>
+                              </div>
+
+                              {/* รูปตัวอย่าง */}
+                              {formImageUrl ? (
+                                <img
+                                  src={formImageUrl}
+                                  alt={seqName}
+                                  className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
+                                />
+                              ) : (
+                                <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                                  No Campaign
+                                </div>
+                              )}
+
+                              {/* วันที่ */}
+                              <div className="text-xs text-gray-600">
+                                {formStartDate} - {formEndDate}
+                              </div>
+                            </div>
+                          );
+                        })()}
                   </div>
                 );
               })}
             </div>
 
             <div className="relative inline-block text-left ml-2 w-full">
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                {/* Spot Filter */}
                 <button
                   type="button"
-                  className="inline-flex  w-20 rounded-md border border-gray-300 shadow-sm px-4 py-2 my-4 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  id="filter-menu"
+                  className="inline-flex w-32 rounded-md border border-gray-300 shadow-sm px-4 py-2 my-4 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  id="spot-filter-menu"
                   aria-expanded="true"
                   aria-haspopup="true"
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  onClick={() => {
+                    setIsFilterOpen(!isFilterOpen);
+                    setIsFormFilterOpen(false);
+                  }}
                 >
-                  Filter
+                  Spot Filter
+                  <svg
+                    className="-mr-1 ml-2 h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                {/* Form Filter */}
+                <button
+                  type="button"
+                  className="inline-flex w-32 rounded-md border border-gray-300 shadow-sm px-4 py-2 my-4 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  id="form-filter-menu"
+                  aria-expanded="true"
+                  aria-haspopup="true"
+                  onClick={() => {
+                    setIsFormFilterOpen(!isFormFilterOpen);
+                    setIsFilterOpen(false);
+                  }}
+                >
+                  Form Filter
                   <svg
                     className="-mr-1 ml-2 h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -458,12 +492,13 @@ const CampaignsPage = () => {
                 </button>
               </div>
 
+              {/* Spot Filter Dropdown */}
               {isFilterOpen && (
                 <div
                   className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
                   role="menu"
                   aria-orientation="vertical"
-                  aria-labelledby="filter-menu"
+                  aria-labelledby="spot-filter-menu"
                 >
                   <div className="py-1" role="none">
                     <button
@@ -475,7 +510,14 @@ const CampaignsPage = () => {
                             allCampaigns.push(...sequenceCampaigns);
                           }
                         );
-                        setFilteredCampaigns(formatCampaignData(allCampaigns));
+                        const formatted = formatCampaignData(allCampaigns);
+                        setFilteredCampaigns(
+                          selectedFormFilter
+                            ? formatted.filter(
+                                (c) => c.seq_form === selectedFormFilter
+                              )
+                            : formatted
+                        );
                         setSelectedSequenceId(null);
                         setIsFilterOpen(false);
                       }}
@@ -486,7 +528,7 @@ const CampaignsPage = () => {
                       } block w-full text-left px-4 py-2 text-sm hover:bg-gray-100`}
                       role="menuitem"
                     >
-                      All campaigns
+                      All spots
                     </button>
                     {allData?.sequences.map((seqObj) => {
                       const seqName = Object.keys(seqObj)[0];
@@ -497,7 +539,22 @@ const CampaignsPage = () => {
                         <button
                           key={seqId}
                           onClick={() => {
-                            handleSelectSequence(seqId);
+                            setSelectedSequenceId(seqId);
+                            const selectedSeqName = Object.keys(
+                              allData.sequences.find(
+                                (s) => Object.values(s)[0] === seqId
+                              )
+                            )[0];
+                            const rawCampaigns =
+                              allData.groupedData[selectedSeqName] || [];
+                            const formatted = formatCampaignData(rawCampaigns);
+                            setFilteredCampaigns(
+                              selectedFormFilter
+                                ? formatted.filter(
+                                    (c) => c.seq_form === selectedFormFilter
+                                  )
+                                : formatted
+                            );
                             setIsFilterOpen(false);
                           }}
                           className={`${
@@ -508,6 +565,100 @@ const CampaignsPage = () => {
                           role="menuitem"
                         >
                           Only {seqName}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Form Filter Dropdown */}
+              {isFormFilterOpen && (
+                <div
+                  className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="form-filter-menu"
+                >
+                  <div className="py-1" role="none">
+                    <button
+                      onClick={() => {
+                        setSelectedFormFilter(null);
+                        // Show all forms
+                        if (selectedSequenceId) {
+                          const selectedSeqName = Object.keys(
+                            allData.sequences.find(
+                              (s) => Object.values(s)[0] === selectedSequenceId
+                            )
+                          )[0];
+                          const rawCampaigns =
+                            allData.groupedData[selectedSeqName] || [];
+                          setFilteredCampaigns(
+                            formatCampaignData(rawCampaigns)
+                          );
+                        } else {
+                          const allCampaigns = [];
+                          Object.values(allData?.groupedData || {}).forEach(
+                            (sequenceCampaigns) => {
+                              allCampaigns.push(...sequenceCampaigns);
+                            }
+                          );
+                          setFilteredCampaigns(
+                            formatCampaignData(allCampaigns)
+                          );
+                        }
+                        setIsFormFilterOpen(false);
+                      }}
+                      className={`${
+                        selectedFormFilter === null
+                          ? "bg-gray-100 text-gray-900"
+                          : "text-gray-700"
+                      } block w-full text-left px-4 py-2 text-sm hover:bg-gray-100`}
+                      role="menuitem"
+                    >
+                      All forms
+                    </button>
+                    {Object.keys(signage_form).map((formKey) => {
+                      const isActive = selectedFormFilter === formKey;
+
+                      return (
+                        <button
+                          key={formKey}
+                          onClick={() => {
+                            setSelectedFormFilter(formKey);
+                            // Get current campaigns based on spot filter
+                            let campaigns;
+                            if (selectedSequenceId) {
+                              const selectedSeqName = Object.keys(
+                                allData.sequences.find(
+                                  (s) =>
+                                    Object.values(s)[0] === selectedSequenceId
+                                )
+                              )[0];
+                              campaigns =
+                                allData.groupedData[selectedSeqName] || [];
+                            } else {
+                              campaigns = [];
+                              Object.values(allData?.groupedData || {}).forEach(
+                                (sequenceCampaigns) => {
+                                  campaigns.push(...sequenceCampaigns);
+                                }
+                              );
+                            }
+                            const formatted = formatCampaignData(campaigns);
+                            setFilteredCampaigns(
+                              formatted.filter((c) => c.seq_form === formKey)
+                            );
+                            setIsFormFilterOpen(false);
+                          }}
+                          className={`${
+                            isActive
+                              ? "bg-gray-100 text-gray-900"
+                              : "text-gray-700"
+                          } block w-full text-left px-4 py-2 text-sm hover:bg-gray-100`}
+                          role="menuitem"
+                        >
+                          Only {formKey}
                         </button>
                       );
                     })}
