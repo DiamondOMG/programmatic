@@ -250,7 +250,7 @@ function calculateStatusForItems(items, seqName, seqId) {
 }
 
 // ✅ ฟังชั่นสำหรับเทสการยิง API ของ Supabase
-export async function testSupabaseAPI() {
+export async function sequence_supabase() {
   try {
     const supabase = await getAuthenticatedSupabaseClient();
     
@@ -264,7 +264,7 @@ export async function testSupabaseAPI() {
     }
     
     console.log('Supabase API Response:', data);
-    return { success: true, data };
+    return data;
   } catch (error) {
     console.error('Test API Error:', error);
     return { success: false, message: `Error: ${error.message}` };
