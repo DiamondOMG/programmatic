@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import CampaignManagement from "../components/CampaignManagement";
 import CampaignCard from "../components/CampaignCard";
-import { get_sequence_all } from "./get_sequence";
+import { get_sequence_all_2 } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
 import signage_form from "../make_data/signage_form";
@@ -130,7 +130,7 @@ const CampaignsPage = () => {
   } = useQuery({
     queryKey: ["sequences"],
     queryFn: async () => {
-      const result = await get_sequence_all();
+      const result = await get_sequence_all_2();
       if (!result.success) throw new Error(result.message);
 
       // จัดกลุ่มข้อมูลตาม seq_name
