@@ -6,6 +6,7 @@ import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
 import signage_form from "../make_data/signage_form";
 import seq_table from "../make_data/seq_table";
+import { sequence_supabase } from "../campaigns/get_sequence";
 import { v4 as uuidv4 } from "uuid";
 
 // Constants
@@ -56,6 +57,7 @@ export default function CombinedPage() {
   const [seq_enddate, setseq_enddate] = useState("");
   const [seq_duration, setseq_duration] = useState(DEFAULT_SEQ_DURATION);
   const [seq_label, setseq_label] = useState("");
+  const [seq_table_data, setSeqTableData] = useState([]);
 
   // Format date to yyyy-MM-dd for input[type="date"]
   const formatDateForInput = (date) => {
@@ -69,6 +71,11 @@ export default function CombinedPage() {
   useEffect(() => {
     const today = new Date();
     setseq_startdate(formatDateForInput(today));
+    const fetchSequenceData = async () => {
+      const result = await sequence_supabase();
+      setSeqTableData(result);
+    };
+    fetchSequenceData();
   }, []);
 
   // Content Upload Handlers
@@ -246,7 +253,7 @@ export default function CombinedPage() {
                 Spot *
               </label>
               <div className="flex flex-wrap gap-4">
-                {seq_table.map((item) => (
+                {seq_table_data.sort((a, b) => a.seq_name.localeCompare(b.seq_name)).map((item) => (
                   <label
                     key={item.seq_name}
                     className="flex items-center space-x-2 cursor-pointer"
