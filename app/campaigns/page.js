@@ -681,7 +681,7 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Running")
+                        .filter((campaign) => campaign.status === "Running" && campaign.email !== null)
                         .map((campaign) => (
                           <div
                             key={campaign.id}
@@ -706,7 +706,7 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Schedule")
+                        .filter((campaign) => campaign.status === "Schedule" && campaign.email !== null)
                         .map((campaign) => (
                           <div
                             key={campaign.id}
@@ -731,7 +731,7 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Complete")
+                        .filter((campaign) => campaign.status === "Complete" && campaign.email !== null)
                         .map((campaign) => (
                           <div
                             key={campaign.id}
