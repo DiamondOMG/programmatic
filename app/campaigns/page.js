@@ -334,10 +334,16 @@ const CampaignsPage = () => {
                               )}
                               <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
                                 <span>{formKey}</span>
-                                <span
-                                  className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                                  title={formStatus}
-                                ></span>
+                                {firstCampaign?.seq_form == "Global" ? (
+                                  <div className={`w-3 h-3`}></div>
+                                ) : (
+                                  <>
+                                    <span
+                                      className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                      title={formStatus}
+                                    ></span>
+                                  </>
+                                )}
                               </div>
 
                               {/* รูปตัวอย่าง */}
@@ -354,9 +360,16 @@ const CampaignsPage = () => {
                               )}
 
                               {/* วันที่ */}
-                              <div className="text-xs text-gray-600">
-                                {formStartDate} - {formEndDate}
-                              </div>
+                              {firstCampaign?.seq_form == "Global" ? (
+                                <div className="text-xs text-white">
+                                  Global
+                                </div>
+                              ) : (
+                              <>
+                                <div className="text-xs text-gray-600">
+                                  {formStartDate} - {formEndDate}
+                                </div>
+                              </>)}
                             </div>
                           );
                         })
@@ -401,11 +414,17 @@ const CampaignsPage = () => {
                           return (
                             <div>
                               <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                                <span>{latestCampaign.seq_form}</span>
-                                <span
-                                  className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                                  title={formStatus}
-                                ></span>
+                                {latestCampaign.seq_form == "Global" ? (
+                                  <span className="text-white">Global</span>
+                                ) : (
+                                  <>
+                                    <span>{latestCampaign.seq_form}</span>
+                                    <span
+                                      className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                      title={formStatus}
+                                    ></span>
+                                  </>
+                                )}
                               </div>
 
                               {/* รูปตัวอย่าง */}
@@ -422,9 +441,13 @@ const CampaignsPage = () => {
                               )}
 
                               {/* วันที่ */}
-                              <div className="text-xs text-gray-600">
-                                {formStartDate} - {formEndDate}
-                              </div>
+                              {latestCampaign.seq_form == "Global" ? null : (
+                                <>
+                                  <div className="text-xs text-gray-600">
+                                    {formStartDate} - {formEndDate}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           );
                         })()}
@@ -681,7 +704,11 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Running" && campaign.email !== null)
+                        .filter(
+                          (campaign) =>
+                            campaign.status === "Running" &&
+                            campaign.email !== null
+                        )
                         .map((campaign) => (
                           <div
                             key={campaign.id}
@@ -706,7 +733,11 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Schedule" && campaign.email !== null)
+                        .filter(
+                          (campaign) =>
+                            campaign.status === "Schedule" &&
+                            campaign.email !== null
+                        )
                         .map((campaign) => (
                           <div
                             key={campaign.id}
@@ -731,7 +762,11 @@ const CampaignsPage = () => {
                     </h3>
                     <div className="space-y-3">
                       {filteredCampaigns
-                        .filter((campaign) => campaign.status === "Complete" && campaign.email !== null)
+                        .filter(
+                          (campaign) =>
+                            campaign.status === "Complete" &&
+                            campaign.email !== null
+                        )
                         .map((campaign) => (
                           <div
                             key={campaign.id}
