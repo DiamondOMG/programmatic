@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
-import signage_form from "../make_data/signage_form";
+import signage_form_2 from "../make_data/signage_form_2";
 import seq_table from "../make_data/seq_table";
 import { sequence_supabase } from "../campaigns/get_sequence";
 import { v4 as uuidv4 } from "uuid";
@@ -59,6 +59,30 @@ export default function CombinedPage() {
   const [seq_label, setseq_label] = useState("");
   const [seq_table_data, setSeqTableData] = useState([]);
   const [fileDimensions, setFileDimensions] = useState(null);
+  const [isDimensionValid, setIsDimensionValid] = useState(null);
+
+  const validateDimensions = (formKey, dims) => {
+    if (!formKey || !dims) {
+      setIsDimensionValid(null);
+      return;
+    }
+    const spec = signage_form_2[formKey];
+    if (!spec) {
+      setIsDimensionValid(null);
+      return;
+    }
+    const ok = dims.width === spec.width && dims.height === spec.height;
+    setIsDimensionValid(ok);
+    if (!ok) {
+      setContentMessage(
+        `Invalid dimensions. Expected ${spec.width}x${spec.height}px, got ${dims.width}x${dims.height}px`
+      );
+      setContentMessageType("error");
+    } else {
+      setContentMessage("");
+      setContentMessageType("");
+    }
+  };
 
   // Format date to yyyy-MM-dd for input[type="date"]
   const formatDateForInput = (date) => {
@@ -126,7 +150,17 @@ export default function CombinedPage() {
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     if (droppedFiles.length > 0) {
-      setContentFile(droppedFiles[0]);
+      const file = droppedFiles[0];
+      setContentFile(file);
+      getFileDimensions(file)
+        .then((dims) => {
+          setFileDimensions(dims);
+          validateDimensions(seq_form, dims);
+        })
+        .catch(() => {
+          setFileDimensions(null);
+          setIsDimensionValid(null);
+        });
     }
   };
 
@@ -139,8 +173,10 @@ export default function CombinedPage() {
       try {
         const dims = await getFileDimensions(file);
         setFileDimensions(dims);
+        validateDimensions(seq_form, dims);
       } catch (err) {
         setFileDimensions(null);
+        setIsDimensionValid(null);
       }
     }
   };
@@ -150,6 +186,12 @@ export default function CombinedPage() {
 
     if (!contentFile) {
       setContentMessage("Please select file");
+      setContentMessageType("error");
+      return;
+    }
+
+    if (isDimensionValid === false) {
+      setContentMessage("Cannot upload: file dimensions do not match the selected format.");
       setContentMessageType("error");
       return;
     }
@@ -275,12 +317,16 @@ export default function CombinedPage() {
                 onChange={(e) => {
                   const selectedForm = e.target.value;
                   setseq_form(selectedForm);
-                  setseq_condition(signage_form[selectedForm]);
+                  const sel = signage_form_2[selectedForm];
+                  setseq_condition(sel ? sel.condition : DEFAULT_SEQ_CONDITION);
+                  if (fileDimensions) {
+                    validateDimensions(selectedForm, fileDimensions);
+                  }
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={false}
               >
-                {Object.keys(signage_form).map((option) => (
+                {Object.keys(signage_form_2).map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -442,7 +488,7 @@ export default function CombinedPage() {
         <button
           type="submit"
           form="uploadForm"
-          disabled={isContentUploading || !contentFile}
+          disabled={isContentUploading || !contentFile || isDimensionValid === false}
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
              hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
