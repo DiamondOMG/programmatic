@@ -58,6 +58,7 @@ export default function CombinedPage() {
   const [seq_duration, setseq_duration] = useState(DEFAULT_SEQ_DURATION);
   const [seq_label, setseq_label] = useState("");
   const [seq_table_data, setSeqTableData] = useState([]);
+  const [fileDimensions, setFileDimensions] = useState(null);
 
   // Format date to yyyy-MM-dd for input[type="date"]
   const formatDateForInput = (date) => {
@@ -77,6 +78,36 @@ export default function CombinedPage() {
     };
     fetchSequenceData();
   }, []);
+
+  const getFileDimensions = (file) => {
+    return new Promise((resolve, reject) => {
+      const type = file.type;
+
+      // ถ้าเป็นวิดีโอ
+      if (type.startsWith("video/")) {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+          resolve({ width: video.videoWidth, height: video.videoHeight });
+          URL.revokeObjectURL(video.src);
+        };
+        video.onerror = reject;
+        video.src = URL.createObjectURL(file);
+      }
+      // ถ้าเป็นภาพ
+      else if (type.startsWith("image/")) {
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.width, height: img.height });
+          URL.revokeObjectURL(img.src);
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+      } else {
+        resolve(null);
+      }
+    });
+  };
 
   // Content Upload Handlers
   const handleContentDragOver = (e) => {
@@ -99,10 +130,18 @@ export default function CombinedPage() {
     }
   };
 
-  const handleContentFileSelect = (e) => {
+  const handleContentFileSelect = async (e) => {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length > 0) {
-      setContentFile(selectedFiles[0]);
+      const file = selectedFiles[0];
+      setContentFile(file);
+
+      try {
+        const dims = await getFileDimensions(file);
+        setFileDimensions(dims);
+      } catch (err) {
+        setFileDimensions(null);
+      }
     }
   };
 
@@ -253,23 +292,25 @@ export default function CombinedPage() {
                 Spot *
               </label>
               <div className="flex flex-wrap gap-4">
-                {seq_table_data.sort((a, b) => a.seq_name.localeCompare(b.seq_name)).map((item) => (
-                  <label
-                    key={item.seq_name}
-                    className="flex items-center space-x-2 cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name="signage-form"
-                      value={item.seq_id}
-                      checked={seq_id === item.seq_id}
-                      onChange={(e) => setseq_id(e.target.value)}
-                      disabled={false}
-                      className="text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-gray-700">{item.seq_name}</span>
-                  </label>
-                ))}
+                {seq_table_data
+                  .sort((a, b) => a.seq_name.localeCompare(b.seq_name))
+                  .map((item) => (
+                    <label
+                      key={item.seq_name}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        name="signage-form"
+                        value={item.seq_id}
+                        checked={seq_id === item.seq_id}
+                        onChange={(e) => setseq_id(e.target.value)}
+                        disabled={false}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-gray-700">{item.seq_name}</span>
+                    </label>
+                  ))}
               </div>
             </div>
             <div>
@@ -354,6 +395,11 @@ export default function CombinedPage() {
                     <div className="text-sm text-gray-500">
                       {(contentFile.size / 1024 / 1024).toFixed(2)} MB
                     </div>
+                    {fileDimensions && (
+                      <div className="text-sm text-gray-500">
+                        {fileDimensions.width} x {fileDimensions.height}px
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
