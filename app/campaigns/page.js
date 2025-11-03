@@ -113,6 +113,7 @@ const CampaignsPage = () => {
         modifiedMillis: item.modifiedMillis
           ? formatDate(item.modifiedMillis)
           : "ไม่มีข้อมูล",
+        modifiedMillisNum: item.modifiedMillis ? Number(item.modifiedMillis) : 0,
         seq_name: item.seq_name,
         email: item.email,
         libraryItemId: item.libraryItemId,
@@ -289,7 +290,7 @@ const CampaignsPage = () => {
 
                     {/* Dynamic sections based on signage_form_2 */}
                     {showAllSpots
-                      ? // Show All Spot: แสดงทุก format
+                      ? //! Show All Spot: แสดงทุก format
                         Object.keys(signage_form_2).map((formKey, formIndex) => {
                           // หา campaigns ทั้งหมดที่ match กับ format นี้
                           const campaignsForForm = formattedCampaigns.filter(
@@ -373,21 +374,36 @@ const CampaignsPage = () => {
                             </div>
                           );
                         })
-                      : // Default: แสดงแค่ campaign ล่าสุด
+                      : //! Default: แสดงแค่ campaign ล่าสุด
                         (() => {
-                          // หา campaign ล่าสุด (modifiedMillis สูงสุด)
+                          // Debug log: show all campaigns for this spot sorted by modifiedMillisNum desc
+                          try {
+                            const debugList = formattedCampaigns
+                              .map((c) => ({
+                                id: c.id,
+                                title: c.title,
+                                seq_form: c.seq_form,
+                                status: c.status,
+                                modifiedMillisNum: c.modifiedMillisNum,
+                                modifiedMillis: c.modifiedMillis,
+                                startMillis: c.startMillis,
+                                endMillis: c.endMillis,
+                              }))
+                              .sort(
+                                (a, b) => (b.modifiedMillisNum || 0) - (a.modifiedMillisNum || 0)
+                              );
+                            console.log(`[Default Latest] ${seqName} campaigns by modifiedMillis desc:`, debugList);
+                          } catch (e) {
+                            console.warn('Debug log failed:', e);
+                          }
+
+                          // หา campaign ล่าสุด (modifiedMillis สูงสุด) ด้วยตัวเลขจริง
                           const latestCampaign = formattedCampaigns.reduce(
                             (latest, current) => {
                               if (!latest) return current;
-                              const latestModified = parseInt(
-                                latest.modifiedMillis || "0"
-                              );
-                              const currentModified = parseInt(
-                                current.modifiedMillis || "0"
-                              );
-                              return currentModified > latestModified
-                                ? current
-                                : latest;
+                              const latestModified = latest.modifiedMillisNum || 0;
+                              const currentModified = current.modifiedMillisNum || 0;
+                              return currentModified > latestModified ? current : latest;
                             },
                             null
                           );
