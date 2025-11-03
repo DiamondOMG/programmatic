@@ -23,21 +23,20 @@ export async function delItem(id_programmatic, seq_id, libraryId) {
 
     // ถ้ามี libraryId ให้ลบข้อมูลในตาราง library ด้วย
     if (libraryId) {
-      try {
-        const { getAuthenticatedSupabaseClient } = await import('../lib/auth-actions');
-        const supabase = await getAuthenticatedSupabaseClient();
-        const { error } = await supabase
-          .from('library')
-          .delete()
-          .eq('library_id', libraryId);
+      const { getAuthenticatedSupabaseClient } = await import('../lib/auth-actions');
+      const supabase = await getAuthenticatedSupabaseClient();
+      const { data, error } = await supabase
+        .from('library')
+        .delete()
+        .eq('library_id', libraryId)
+        .select()
+        .single();
 
-        if (error) {
-          console.error('Error deleting library record:', error);
-          // ยังคงดำเนินการลบ sequence ต่อไปแม้ลบ library record ไม่สำเร็จ
-        }
-      } catch (error) {
-        console.error('Error in library record deletion:', error);
-        // ยังคงดำเนินการลบ sequence ต่อไปแม้เกิดข้อผิดพลาด
+      if (error) {
+        console.error('Error deleting library record:', error);
+        throw new Error('No Permission');
+      } else if (!data) {
+        throw new Error('No Permission');
       }
     }
 
