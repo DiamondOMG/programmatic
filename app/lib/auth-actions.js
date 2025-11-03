@@ -242,3 +242,30 @@ export async function getAuthenticatedSupabaseClient() {
     },
   });
 }
+
+// Get user by ID
+export async function getUserById() {
+  const { success: userSuccess, user } = await getCurrentUser();
+  if (!userSuccess || !user) {
+    // 📢 เพิ่ม Step ใน Error message
+    throw new Error(
+      "User not authenticated"
+    );
+  }
+
+  const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+
+  const { error, data } = await supabaseAuthenticated
+    .from("users")
+    .select("*")
+    .eq('user_id', user.id);
+
+  if (error) {
+    // 📢 เพิ่ม Step ใน Error message
+    throw new Error(
+      `Step 3 (getUserById) failed: Supabase error: ${error.message}`
+    );
+  }
+
+  return { success: true, data };
+}
