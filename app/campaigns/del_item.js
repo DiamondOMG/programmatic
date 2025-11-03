@@ -7,9 +7,10 @@ const STACKS_USERNAME = process.env.STACKS_USERNAME;
 const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 
 // Server action สำหรับลบ item
-export async function delItem(id_programmatic,seq_id) {
+export async function delItem(id_programmatic, seq_id, libraryId) {
   try {
     // ขั้นตอน 1: ใช้ checkStackItem เพื่อหาตำแหน่งและ type_programmatic
+    console.log("libraryId", libraryId);
     const itemDetails = await checkStackItem(seq_id, id_programmatic);
 
     // ตรวจสอบว่าพบ item หรือไม่
@@ -18,6 +19,26 @@ export async function delItem(id_programmatic,seq_id) {
         success: false,
         error: itemDetails.error,
       };
+    }
+
+    // ถ้ามี libraryId ให้ลบข้อมูลในตาราง library ด้วย
+    if (libraryId) {
+      try {
+        const { getAuthenticatedSupabaseClient } = await import('../lib/auth-actions');
+        const supabase = await getAuthenticatedSupabaseClient();
+        const { error } = await supabase
+          .from('library')
+          .delete()
+          .eq('library_id', libraryId);
+
+        if (error) {
+          console.error('Error deleting library record:', error);
+          // ยังคงดำเนินการลบ sequence ต่อไปแม้ลบ library record ไม่สำเร็จ
+        }
+      } catch (error) {
+        console.error('Error in library record deletion:', error);
+        // ยังคงดำเนินการลบ sequence ต่อไปแม้เกิดข้อผิดพลาด
+      }
     }
 
     // ขั้นตอน 2: ตรวจสอบ type_programmatic

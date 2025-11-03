@@ -49,7 +49,10 @@ const CampaignsPage = () => {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await delItem(selectId, selectSeqId);
+      const campaignToDelete = filteredCampaigns.find(
+        (c) => c.id === selectId && c.seq_id === selectSeqId
+      );
+      const response = await delItem(selectId, selectSeqId, campaignToDelete?.libraryItemId);
       if (response.success) {
         setMessage({ type: "success", text: response.message });
         // Invalidate queries to refetch the latest data
