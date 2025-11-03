@@ -1,6 +1,6 @@
 "use server";
 
-import { getCurrentUser } from "../lib/auth-actions";
+import { getCurrentUser, getAuthenticatedSupabaseClient } from "../lib/auth-actions";
 import { checkStackItem } from "../campaigns/get_sequence";
 
 // อ่าน environment variables สำหรับ Basic Auth
@@ -10,6 +10,26 @@ const STACKS_PASSWORD = process.env.STACKS_PASSWORD;
 // ฟังก์ชันสร้าง modifiedMillis (Unix timestamp 13 หลัก)
 function generateModifiedMillis() {
   return Date.now().toString();
+}
+
+// ฟังก์ชันอัปเดตข้อมูลในตาราง library (อัปเดตจาก library_id)
+async function updateLibraryRecord(id, campaign_name, seq_id) {
+  const { success: userSuccess, user } = await getCurrentUser();
+  if (!userSuccess || !user) {
+    throw new Error("Step 3 (updateLibraryRecord) failed: User not authenticated");
+  }
+
+  const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+  const { error } = await supabaseAuthenticated
+    .from("library")
+    .update({ campaign_name, seq_id })
+    .eq("library_id", id);
+
+  if (error) {
+    throw new Error(`Step 3 (updateLibraryRecord) failed: Supabase error: ${error.message}`);
+  }
+
+  return { success: true };
 }
 
 // Main server action สำหรับ update sequence
@@ -95,6 +115,13 @@ export async function updateCampaign(formData) {
     }
 
     const result = await response.json();
+    
+    // Trigger update to Supabase library record (non-blocking on failure)
+    try {
+      await updateLibraryRecord(libraryId, seq_label, seq_id);
+    } catch (e) {
+      console.warn("updateLibraryRecord failed:", e);
+    }
 
     return {
       success: true,
