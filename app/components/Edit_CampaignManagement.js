@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import signage_form from "../make_data/signage_form";
 import signage_form_2 from "../make_data/signage_form_2";
 import { updateCampaign } from "../campaign/update_campaign";
 
