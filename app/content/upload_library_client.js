@@ -84,7 +84,7 @@ export async function uploadAsset(formData, seq_id) {
     // Step 3: เรียก server action เพื่อบันทึกข้อมูลลง library table
     try {
       console.log("Starting Step 3: createLibraryRecord");
-      await createLibraryRecord(id, pendingId);
+      await createLibraryRecord(id, pendingId, formData.get("campaign_name"),seq_id);
       console.log("Step 3 success. Record saved to Supabase.");
     } catch (e) {
       console.error("Error in Step 3:", e);

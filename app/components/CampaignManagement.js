@@ -204,6 +204,7 @@ export default function CombinedPage() {
       const fileNameWithEnterprise = `ENTERPRISE ${ENTERPRISE} - ${contentFile.name}`;
       formData.append("label", fileNameWithEnterprise);
       formData.append("file", contentFile);
+      formData.append("campaign_name", seq_label);
 
       const result = await uploadAsset(formData, seq_id);
 

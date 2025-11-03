@@ -107,7 +107,7 @@ export async function uploadFile(file, itemId, pendingId, fileName) {
 }
 
 // ฟังก์ชันบันทึกข้อมูลลง library table
-export async function createLibraryRecord(id, pendingId) {
+export async function createLibraryRecord(id, pendingId,campagin_name,seq_id) {
   const { success: userSuccess, user } = await getCurrentUser();
   if (!userSuccess || !user) {
     // 📢 เพิ่ม Step ใน Error message
@@ -123,6 +123,8 @@ export async function createLibraryRecord(id, pendingId) {
     pending_id: pendingId,
     user_id: user.id,
     created: new Date().toISOString(),
+    campaign_name: campagin_name,
+    seq_id: seq_id,
   });
 
   if (error) {
