@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import signage_form from "../make_data/signage_form";
+import signage_form_2 from "../make_data/signage_form_2";
 import { updateCampaign } from "../campaign/update_campaign";
 
 // ฟังก์ชันแปลง date เป็น UnixTime UTC
@@ -51,13 +52,13 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
       setSeqName(campaign.seq_name || "");
       setSeqId(campaign.seq_id || "");
 
-      // หา condition ที่ match signage_form
-      const matchedConditionKey = Object.keys(signage_form).find(
-        (key) => signage_form[key] === campaign.description
+      // หา condition ที่ match signage_form_2
+      const matchedConditionKey = Object.keys(signage_form_2).find(
+        (key) => signage_form_2[key].condition === campaign.description
       );
       if (matchedConditionKey) {
         setSeqForm(matchedConditionKey);
-        setSeqCondition(signage_form[matchedConditionKey]);
+        setSeqCondition(signage_form_2[matchedConditionKey].condition);
       }
 
       setSeqStartDate(formatDateForInput(campaign.startMillis));
@@ -121,21 +122,12 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Format *
               </label>
-              <select
+              <input
+                type="text"
                 value={seq_form}
-                onChange={(e) => {
-                  const selectedForm = e.target.value;
-                  setSeqForm(selectedForm);
-                  setSeqCondition(signage_form[selectedForm]);
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {Object.keys(signage_form).map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+                readOnly
+                className="w-full px-3 py-2 border border-gray-200 rounded-md bg-gray-100 text-gray-600"
+              />
             </div>
 
             {/* Spot */}

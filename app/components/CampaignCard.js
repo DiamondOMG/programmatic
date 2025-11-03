@@ -1,6 +1,6 @@
 import React from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import signage_form from "../make_data/signage_form.js";
+import signage_form_2 from "../make_data/signage_form_2.js";
 
 // Component Card แยกออกมา
 export default function CampaignCard({ campaign, onEdit, onDelete, selectId, selectSeqId }) {
@@ -19,7 +19,7 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
 
   // 🔹 ฟังก์ชัน map condition เป็น label
   const getLabelFromCondition = (condition) => {
-    for (const [label, cond] of Object.entries(signage_form)) {
+    for (const [label, cond] of Object.entries(signage_form_2)) {
       if (cond === condition) {
         return label;
       }

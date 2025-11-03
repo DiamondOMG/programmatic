@@ -7,7 +7,7 @@ import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all_2 } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
-import signage_form from "../make_data/signage_form";
+import signage_form_2 from "../make_data/signage_form_2";
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -287,10 +287,10 @@ const CampaignsPage = () => {
                       <span className="font-bold underline">{seqName}</span>
                     </div>
 
-                    {/* Dynamic sections based on signage_form */}
+                    {/* Dynamic sections based on signage_form_2 */}
                     {showAllSpots
                       ? // Show All Spot: แสดงทุก format
-                        Object.keys(signage_form).map((formKey, formIndex) => {
+                        Object.keys(signage_form_2).map((formKey, formIndex) => {
                           // หา campaigns ทั้งหมดที่ match กับ format นี้
                           const campaignsForForm = formattedCampaigns.filter(
                             (c) => c.seq_form === formKey
@@ -641,7 +641,7 @@ const CampaignsPage = () => {
                     >
                       All forms
                     </button>
-                    {Object.keys(signage_form).map((formKey) => {
+                    {Object.keys(signage_form_2).map((formKey) => {
                       const isActive = selectedFormFilter === formKey;
 
                       return (
