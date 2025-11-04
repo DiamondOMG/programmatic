@@ -5,10 +5,10 @@ import Navbar from "./components/Navbar";
 
 const queryClient = new QueryClient();
 
-export default function Providers({ children }) {
+export default function Providers({ children, userData }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <Navbar />
+      <Navbar userData={userData} />
       <main>{children}</main>
     </QueryClientProvider>
   );

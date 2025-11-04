@@ -6,13 +6,12 @@ import { logoutUser } from "@/app/lib/auth-actions";
 import { LogOut, ChevronDown, User } from "lucide-react";
 import { useState } from "react";
 
-export default function Navbar() {
+export default function Navbar({ userData }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   if (pathname === "/" || pathname === "/auth") return null;
-
   const handleLogout = async () => {
     try {
       const result = await logoutUser();
@@ -25,6 +24,7 @@ export default function Navbar() {
       console.error("Error logging out:", error);
     }
   };
+  console.log("userdata",userData)
 
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-md border-b border-gray-200 h-16 sticky top-0 z-50">
@@ -40,6 +40,20 @@ export default function Navbar() {
 
           {/* ✅ เมนู */}
           <div className="flex items-center space-x-6 relative">
+            {/* ✅ List User Button - แสดงเฉพาะเมื่อ permission_user === 4 */}
+            {userData?.[0]?.permission_user === 4 && (
+              <Link
+                href="/list-user"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  pathname && pathname === "/list-user"
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
+                List User
+              </Link>
+            )}
+            
             <Link
               href="/campaigns"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
@@ -78,7 +92,8 @@ export default function Navbar() {
               </button>
 
               {isOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-100 overflow-hidden z-50">
+                  {/* ✅ แสดงข้อมูลผู้ใช้ */}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2 transition-colors duration-150"

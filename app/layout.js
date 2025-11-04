@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers"; // 👈 แยกส่วน client ไปอีกไฟล์
+import { getUserById } from "./lib/auth-actions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,14 +21,25 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // เรียกใช้ฟังก์ชัน getUserById เพื่อดึงข้อมูลผู้ใช้
+  let userData = null;
+  try {
+    const result = await getUserById();
+    if (result.success) {
+      userData = result.data;
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* ✅ ส่วนนี้เป็น Client Component */}
-        <Providers>{children}</Providers>
+        <Providers userData={userData}>{children}</Providers>
       </body>
     </html>
   );
