@@ -6,7 +6,7 @@ export default async function ListUserPage() {
   if (!success) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">User List</h1>
+        <h1 className="text-2xl font-bold mb-4 text-center">List User</h1>
         <p className="text-red-500">Error: {message}</p>
       </div>
     );
@@ -29,7 +29,21 @@ export default async function ListUserPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">User List</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">List User</h1>
+
+      {/* User Roles Explanation Section */}
+      <div className="flex justify-center mb-6">
+        <div className="w-full max-w-3xl bg-blue-200 text-gray-800 p-6 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold mb-3">User Roles and Permissions</h2>
+          <ul className="list-disc list-inside space-y-2">
+            <li><span className="font-medium">Viewer:</span> Can only view campaigns.</li>
+            <li><span className="font-medium">Editor:</span> Can view, edit, and add campaigns.</li>
+            <li><span className="font-medium">Manager:</span> Can view, edit, and add campaigns, and view logs.</li>
+            <li><span className="font-medium">Admin:</span> Can view, edit, and add campaigns, view logs, view/edit sequences, view/edit formats, grant permissions, and delete users (excluding themselves and other admins).</li>
+          </ul>
+        </div>
+      </div>
+
       <div className="flex justify-center">
         <div className="w-full max-w-3xl">
           <div className="overflow-x-auto rounded-lg shadow-md">

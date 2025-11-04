@@ -52,7 +52,11 @@ const CampaignsPage = () => {
       const campaignToDelete = filteredCampaigns.find(
         (c) => c.id === selectId && c.seq_id === selectSeqId
       );
-      const response = await delItem(selectId, selectSeqId, campaignToDelete?.libraryItemId);
+      const response = await delItem(
+        selectId,
+        selectSeqId,
+        campaignToDelete?.libraryItemId
+      );
       if (response.success) {
         setMessage({ type: "success", text: response.message });
         // Invalidate queries to refetch the latest data
@@ -116,7 +120,9 @@ const CampaignsPage = () => {
         modifiedMillis: item.modifiedMillis
           ? formatDate(item.modifiedMillis)
           : "ไม่มีข้อมูล",
-        modifiedMillisNum: item.modifiedMillis ? Number(item.modifiedMillis) : 0,
+        modifiedMillisNum: item.modifiedMillis
+          ? Number(item.modifiedMillis)
+          : 0,
         seq_name: item.seq_name,
         email: item.email,
         libraryItemId: item.libraryItemId,
@@ -294,89 +300,92 @@ const CampaignsPage = () => {
                     {/* Dynamic sections based on signage_form_2 */}
                     {showAllSpots
                       ? //! Show All Spot: แสดงทุก format
-                        Object.keys(signage_form_2).map((formKey, formIndex) => {
-                          // หา campaigns ทั้งหมดที่ match กับ format นี้
-                          const campaignsForForm = formattedCampaigns.filter(
-                            (c) => c.seq_form === formKey
-                          );
-
-                          // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
-                          let firstCampaign =
-                            campaignsForForm.length > 0
-                              ? campaignsForForm[0]
-                              : null;
-
-                          // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
-                          if (!firstCampaign) {
-                            firstCampaign = formattedCampaigns.find(
-                              (c) => c.seq_form === "Global"
+                        Object.keys(signage_form_2).map(
+                          (formKey, formIndex) => {
+                            // หา campaigns ทั้งหมดที่ match กับ format นี้
+                            const campaignsForForm = formattedCampaigns.filter(
+                              (c) => c.seq_form === formKey
                             );
-                          }
 
-                          // คำนวณ status และสีสำหรับ format นี้
-                          let formStatus = firstCampaign?.status || "none";
-                          let formStatusColor = "bg-gray-400";
-                          if (formStatus === "Running")
-                            formStatusColor = "bg-green-500";
-                          else if (formStatus === "Schedule")
-                            formStatusColor = "bg-yellow-500";
-                          else if (formStatus === "Complete")
-                            formStatusColor = "bg-blue-500";
+                            // เอา campaign ตัวแรก (ถ้ามี) เพื่อดู status
+                            let firstCampaign =
+                              campaignsForForm.length > 0
+                                ? campaignsForForm[0]
+                                : null;
 
-                          const formStartDate = firstCampaign
-                            ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
-                            : "none";
-                          const formEndDate = firstCampaign
-                            ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
-                            : "none";
-                          const formImageUrl = firstCampaign?.image || "";
+                            // ถ้าไม่มี campaign สำหรับ format นี้ ให้หา Global
+                            if (!firstCampaign) {
+                              firstCampaign = formattedCampaigns.find(
+                                (c) => c.seq_form === "Global"
+                              );
+                            }
 
-                          return (
-                            <div key={formKey}>
-                              {formIndex > 0 && (
-                                <div className="w-full h-px bg-gray-300 my-2"></div>
-                              )}
-                              <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
-                                <span>{formKey}</span>
+                            // คำนวณ status และสีสำหรับ format นี้
+                            let formStatus = firstCampaign?.status || "none";
+                            let formStatusColor = "bg-gray-400";
+                            if (formStatus === "Running")
+                              formStatusColor = "bg-green-500";
+                            else if (formStatus === "Schedule")
+                              formStatusColor = "bg-yellow-500";
+                            else if (formStatus === "Complete")
+                              formStatusColor = "bg-blue-500";
+
+                            const formStartDate = firstCampaign
+                              ? formatUnixToDDMMYYYY(firstCampaign.startMillis)
+                              : "none";
+                            const formEndDate = firstCampaign
+                              ? formatUnixToDDMMYYYY(firstCampaign.endMillis)
+                              : "none";
+                            const formImageUrl = firstCampaign?.image || "";
+
+                            return (
+                              <div key={formKey}>
+                                {formIndex > 0 && (
+                                  <div className="w-full h-px bg-gray-300 my-2"></div>
+                                )}
+                                <div className="flex items-center mb-1 space-x-1 text-sm font-medium">
+                                  <span>{formKey}</span>
+                                  {firstCampaign?.seq_form == "Global" ? (
+                                    <div className={`w-3 h-3`}></div>
+                                  ) : (
+                                    <>
+                                      <span
+                                        className={`w-3 h-3 rounded-full ${formStatusColor}`}
+                                        title={formStatus}
+                                      ></span>
+                                    </>
+                                  )}
+                                </div>
+
+                                {/* รูปตัวอย่าง */}
+                                {formImageUrl ? (
+                                  <img
+                                    src={formImageUrl}
+                                    alt={seqName}
+                                    className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
+                                  />
+                                ) : (
+                                  <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
+                                    No Campaign
+                                  </div>
+                                )}
+
+                                {/* วันที่ */}
                                 {firstCampaign?.seq_form == "Global" ? (
-                                  <div className={`w-3 h-3`}></div>
+                                  <div className="text-xs text-white">
+                                    Global
+                                  </div>
                                 ) : (
                                   <>
-                                    <span
-                                      className={`w-3 h-3 rounded-full ${formStatusColor}`}
-                                      title={formStatus}
-                                    ></span>
+                                    <div className="text-xs text-gray-600">
+                                      {formStartDate} - {formEndDate}
+                                    </div>
                                   </>
                                 )}
                               </div>
-
-                              {/* รูปตัวอย่าง */}
-                              {formImageUrl ? (
-                                <img
-                                  src={formImageUrl}
-                                  alt={seqName}
-                                  className="w-full h-20 object-contain object-center rounded mb-1 bg-gray-100"
-                                />
-                              ) : (
-                                <div className="w-full h-20 bg-gray-200 flex items-center justify-center rounded mb-1 text-gray-400 text-xs">
-                                  No Campaign
-                                </div>
-                              )}
-
-                              {/* วันที่ */}
-                              {firstCampaign?.seq_form == "Global" ? (
-                                <div className="text-xs text-white">
-                                  Global
-                                </div>
-                              ) : (
-                              <>
-                                <div className="text-xs text-gray-600">
-                                  {formStartDate} - {formEndDate}
-                                </div>
-                              </>)}
-                            </div>
-                          );
-                        })
+                            );
+                          }
+                        )
                       : //! Default: แสดงแค่ campaign ล่าสุด
                         (() => {
                           // Debug log: show all campaigns for this spot sorted by modifiedMillisNum desc
@@ -393,20 +402,29 @@ const CampaignsPage = () => {
                                 endMillis: c.endMillis,
                               }))
                               .sort(
-                                (a, b) => (b.modifiedMillisNum || 0) - (a.modifiedMillisNum || 0)
+                                (a, b) =>
+                                  (b.modifiedMillisNum || 0) -
+                                  (a.modifiedMillisNum || 0)
                               );
-                            console.log(`[Default Latest] ${seqName} campaigns by modifiedMillis desc:`, debugList);
+                            console.log(
+                              `[Default Latest] ${seqName} campaigns by modifiedMillis desc:`,
+                              debugList
+                            );
                           } catch (e) {
-                            console.warn('Debug log failed:', e);
+                            console.warn("Debug log failed:", e);
                           }
 
                           // หา campaign ล่าสุด (modifiedMillis สูงสุด) ด้วยตัวเลขจริง
                           const latestCampaign = formattedCampaigns.reduce(
                             (latest, current) => {
                               if (!latest) return current;
-                              const latestModified = latest.modifiedMillisNum || 0;
-                              const currentModified = current.modifiedMillisNum || 0;
-                              return currentModified > latestModified ? current : latest;
+                              const latestModified =
+                                latest.modifiedMillisNum || 0;
+                              const currentModified =
+                                current.modifiedMillisNum || 0;
+                              return currentModified > latestModified
+                                ? current
+                                : latest;
                             },
                             null
                           );
@@ -711,8 +729,8 @@ const CampaignsPage = () => {
 
             <div className="space-y-6">
               {filteredCampaigns.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No Campaigns Found</p>
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
                 </div>
               ) : (
                 <>
