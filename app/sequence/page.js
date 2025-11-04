@@ -18,6 +18,7 @@ export default function SequencePage() {
   
   // Form state
   const [formData, setFormData] = useState({
+    seq_id: '',
     seq_name: '',
     retailer: 'TopsDigital' // Default value as per your data
   });
@@ -89,6 +90,7 @@ export default function SequencePage() {
   const openCreateModal = () => {
     setCurrentSequence(null);
     setFormData({
+      seq_id: '',
       seq_name: '',
       retailer: 'TopsDigital'
     });
@@ -99,6 +101,7 @@ export default function SequencePage() {
   const openEditModal = (sequence) => {
     setCurrentSequence(sequence);
     setFormData({
+      seq_id: sequence.seq_id,
       seq_name: sequence.seq_name,
       retailer: sequence.retailer || 'TopsDigital'
     });
@@ -109,25 +112,34 @@ export default function SequencePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
     
     try {
+      const sequenceData = {
+        seq_name: formData.seq_name,
+        retailer: formData.retailer
+      };
+
       if (currentSequence) {
         // Update existing sequence
-        const updatedSequence = await updateSequence(currentSequence.seq_id, formData);
+        const updatedSequence = await updateSequence(currentSequence.seq_id, sequenceData);
         setSequences(prev => 
           prev.map(seq => 
             seq.seq_id === currentSequence.seq_id ? updatedSequence : seq
           )
         );
       } else {
-        // Create new sequence
-        const newSequence = await createSequence(formData);
+        // Create new sequence with custom ID
+        const newSequence = await createSequence({
+          ...sequenceData,
+          seq_id: formData.seq_id
+        });
         setSequences(prev => [newSequence, ...prev]);
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error saving sequence:', error);
-      setError('Failed to save sequence');
+      setError(error.message || 'Failed to save sequence. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -379,6 +391,22 @@ export default function SequencePage() {
               </h3>
             </div>
             <form onSubmit={handleSubmit} className="p-6">
+              <div className="mb-4">
+                <label htmlFor="seq_id" className="block text-sm font-medium text-gray-700 mb-1">
+                  Sequence ID <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="seq_id"
+                  name="seq_id"
+                  required={!currentSequence}
+                  disabled={!!currentSequence}
+                  value={formData.seq_id}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+                  placeholder="Enter sequence ID"
+                />
+              </div>
               <div className="mb-4">
                 <label htmlFor="seq_name" className="block text-sm font-medium text-gray-700 mb-1">
                   Sequence Name <span className="text-red-500">*</span>
