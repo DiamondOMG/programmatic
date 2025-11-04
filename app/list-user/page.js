@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { getUserAll, deleteUser } from "@/app/lib/auth-actions";
+import { getUserAll, deleteUser, updateUserPermission } from "@/app/lib/auth-actions";
 
 const permissionMap = {
   1: "Viewer",
@@ -14,7 +14,10 @@ const permissionMap = {
 export default function ListUserPage() {
   const queryClient = useQueryClient();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [userToDeleteId, setUserToDeleteId] = useState(null);
+  const [userToUpdate, setUserToUpdate] = useState(null);
+  const [selectedPermission, setSelectedPermission] = useState(1);
 
   const {
     data: users,
@@ -29,15 +32,48 @@ export default function ListUserPage() {
   const deleteUserMutation = useMutation({
     mutationFn: deleteUser,
     onSuccess: () => {
-      queryClient.invalidateQueries(["users"]); // Refetch users after successful deletion
+      queryClient.invalidateQueries(["users"]);
       setShowDeleteModal(false);
       setUserToDeleteId(null);
-      alert("User deleted successfully!"); // Optional: show success message
+      alert("User deleted successfully!");
     },
     onError: (err) => {
-      alert(`Error deleting user: ${err.message}`); // Optional: show error message
+      alert(`Error deleting user: ${err.message}`);
     },
   });
+
+  const updatePermissionMutation = useMutation({
+    mutationFn: ({ userId, permission }) => updateUserPermission(userId, permission),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["users"]);
+      setShowPermissionModal(false);
+      setUserToUpdate(null);
+      alert("Permission updated successfully!");
+    },
+    onError: (err) => {
+      alert(`Error updating permission: ${err.message}`);
+    },
+  });
+
+  const handleUpdatePermission = (user) => {
+    setUserToUpdate(user);
+    setSelectedPermission(user.permission_user);
+    setShowPermissionModal(true);
+  };
+
+  const handleConfirmUpdate = () => {
+    if (userToUpdate) {
+      updatePermissionMutation.mutate({
+        userId: userToUpdate.user_id,
+        permission: Number(selectedPermission)
+      });
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setShowPermissionModal(false);
+    setUserToUpdate(null);
+  };
 
   const handleDeleteClick = (userId) => {
     setUserToDeleteId(userId);
@@ -136,7 +172,10 @@ export default function ListUserPage() {
                       {permissionMap[user.permission_user] || "Unknown"}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-800">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md text-xs mr-2 transition-colors duration-200">
+                      <button 
+                        onClick={() => handleUpdatePermission(user)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md text-xs mr-2 transition-colors duration-200"
+                      >
                         Edit
                       </button>
                       <button
@@ -153,6 +192,45 @@ export default function ListUserPage() {
           </div>
         </div>
       </div>
+
+      {/* Permission Update Modal */}
+      {showPermissionModal && userToUpdate && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+            <h2 className="text-lg font-bold mb-4">Update Permission</h2>
+            <p className="mb-2">User: {userToUpdate.email}</p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Permission Level:
+              </label>
+              <select
+                value={selectedPermission}
+                onChange={(e) => setSelectedPermission(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="1">Viewer</option>
+                <option value="2">Editor</option>
+                <option value="3">Manager</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={handleCancelUpdate}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmUpdate}
+                disabled={updatePermissionMutation.isPending}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {updatePermissionMutation.isPending ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
