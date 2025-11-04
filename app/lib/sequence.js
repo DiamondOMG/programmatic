@@ -102,7 +102,6 @@ export async function createSequence(sequenceData) {
       .from("sequence")
       .insert([{
         ...sequenceData,
-        created_by: user.id
       }])
       .select()
       .single();

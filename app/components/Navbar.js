@@ -76,6 +76,18 @@ export default function Navbar({ userData }) {
                 Sequence
               </Link>
             )}
+            {userData?.[0]?.permission_user >= 4 && (
+              <Link
+                href="/format"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  pathname && pathname === "/format"
+                    ? "bg-blue-100 text-blue-700 font-semibold"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
+                Format
+              </Link>
+            )}
 
             <Link
               href="/campaigns"
