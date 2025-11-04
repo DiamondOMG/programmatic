@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // เพิ่ม service role key
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Login user
@@ -325,4 +326,84 @@ export async function getUserAll() {
     //   "user_id": "7005deee-60b9-4cd9-a135-bc9c9f83af51"
     // },
   // ]
+}
+
+// Delete user
+export async function deleteUser(userIdToDelete) {
+  try {
+    // 1. Check current user's permission
+    const { success: userAuthSuccess, data: currentUserData } = await getUserById();
+
+    if (!userAuthSuccess || !currentUserData || currentUserData.length === 0) {
+      return { success: false, message: "User not authenticated or data not found." };
+    }
+
+    const currentUserPermission = currentUserData[0].permission_user;
+
+    if (currentUserPermission !== 4) { // 4 for Admin
+      return { success: false, message: "Permission denied. Only admins can delete users." };
+    }
+
+    // 2. Perform deletion using Supabase Admin API
+    const adminSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; // Same as supabaseUrl
+    const adminApiEndpoint = `${adminSupabaseUrl}/auth/v1/admin/users/${userIdToDelete}`;
+
+    const response = await fetch(adminApiEndpoint, {
+      method: 'DELETE',
+      headers: {
+        'apikey': supabaseServiceRoleKey,
+        'Authorization': `Bearer ${supabaseServiceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to delete user: ${errorData.message || response.statusText}`);
+    }
+
+    return { success: true, message: "User deleted successfully." };
+
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Update user permission
+export async function updateUserPermission(userIdToUpdate, newPermission) {
+  try {
+    // 1. Check current user's permission
+    const { success: userAuthSuccess, data: currentUserData } = await getUserById();
+
+    if (!userAuthSuccess || !currentUserData || currentUserData.length === 0) {
+      return { success: false, message: "User not authenticated or data not found." };
+    }
+
+    const currentUserPermission = currentUserData[0].permission_user;
+
+    if (currentUserPermission !== 4) { // 4 for Admin
+      return { success: false, message: "Permission denied. Only admins can update user permissions." };
+    }
+
+    // 2. Get authenticated Supabase client
+    const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+
+    // 3. Perform update using Supabase client
+    const { data, error } = await supabaseAuthenticated
+      .from('users')
+      .update({ permission_user: newPermission })
+      .eq('user_id', userIdToUpdate)
+      .select(); // To return the updated record
+
+    if (error) {
+      throw new Error(`Failed to update user permission: ${error.message}`);
+    }
+
+    return { success: true, data: data[0], message: "User permission updated successfully." };
+
+  } catch (error) {
+    console.error("Error updating user permission:", error);
+    return { success: false, message: error.message };
+  }
 }
