@@ -268,4 +268,61 @@ export async function getUserById() {
   }
 
   return { success: true, data };
+//   {
+//   "success": true,
+//   "data": [
+//     {
+//       "user_id": "a87cecfd-8439-4836-bd6a-e47fba58d7f0",
+//       "email": "omgdigital.developer.02@gmail.com",
+//       "password_hash": "$2b$10$CBIFukZdpPXEGggh3MIG0ehYlahekg84LGbUyRiiWHx4ZRnwZLN0i",
+//       "create_date": "2025-10-08T08:57:43.788718+00:00",
+//       "info": {
+
+//       },
+//       "permission_user": 4
+//     }
+//   ]
+// }
+}
+
+// Get all users
+// ใช้สำหรับดึงข้อมูลผู้ใช้ทั้งหมดจาก Supabase REST API
+export async function getUserAll() {
+  try {
+    const supabaseAuthenticated = await getAuthenticatedSupabaseClient();
+    
+    // ใช้ REST API endpoint โดยตรง
+    const { data, error } = await supabaseAuthenticated
+      .from('users')
+      .select('email, permission_user, user_id')
+      .order('create_date', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch users: ${error.message}`);
+    }
+
+    return { 
+      success: true, 
+      data 
+    };
+  } catch (error) {
+    return { 
+      success: false, 
+      message: error.message 
+    };
+  }
+  // {
+  // "success": true,
+  // "data": [
+    // {
+    //   "email": "samanya.i@omgthailand.com",
+    //   "permission_user": 1,
+    //   "user_id": "6ca573e4-e02a-4622-b5a6-6fafee039c3a"
+    // },
+    // {
+    //   "email": "darika.k@omgthailand.com",
+    //   "permission_user": 1,
+    //   "user_id": "7005deee-60b9-4cd9-a135-bc9c9f83af51"
+    // },
+  // ]
 }

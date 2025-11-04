@@ -24,7 +24,6 @@ export default function Navbar({ userData }) {
       console.error("Error logging out:", error);
     }
   };
-  console.log("userdata",userData)
 
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-md border-b border-gray-200 h-16 sticky top-0 z-50">
