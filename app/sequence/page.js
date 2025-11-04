@@ -16,11 +16,18 @@ export default function SequencePage() {
   const [currentSequence, setCurrentSequence] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Retailer options
+  const retailerOptions = [
+    'TopsDigital',
+    'Big C',
+    'Dear Tummy',
+  ];
+
   // Form state
   const [formData, setFormData] = useState({
     seq_id: '',
     seq_name: '',
-    retailer: 'TopsDigital' // Default value as per your data
+    retailer: 'TopsDigital' // Default value
   });
 
   useEffect(() => {
@@ -431,10 +438,14 @@ export default function SequencePage() {
                   name="retailer"
                   value={formData.retailer}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  required
                 >
-                  <option value="TopsDigital">TopsDigital</option>
-                  {/* Add more retailers if needed */}
+                  {retailerOptions.map((retailer) => (
+                    <option key={retailer} value={retailer}>
+                      {retailer}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex justify-end space-x-3">
