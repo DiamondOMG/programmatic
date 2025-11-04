@@ -172,18 +172,22 @@ export default function ListUserPage() {
                       {permissionMap[user.permission_user] || "Unknown"}
                     </td>
                     <td className="py-3 px-4 text-sm text-gray-800">
-                      <button 
-                        onClick={() => handleUpdatePermission(user)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md text-xs mr-2 transition-colors duration-200"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(user.user_id)}
-                        className="bg-red-600 hover:bg-red-700 text-white font-medium py-1 px-3 rounded-md text-xs transition-colors duration-200"
-                      >
-                        Del
-                      </button>
+                      {user.permission_user !== 4 && (
+                        <>
+                          <button 
+                            onClick={() => handleUpdatePermission(user)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-3 rounded-md text-xs mr-2 transition-colors duration-200"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(user.user_id)}
+                            className="bg-red-600 hover:bg-red-700 text-white font-medium py-1 px-3 rounded-md text-xs transition-colors duration-200"
+                          >
+                            Del
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
