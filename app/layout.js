@@ -26,6 +26,21 @@ export default async function RootLayout({ children }) {
   let userData = null;
   try {
     const result = await getUserById();
+//   {
+//   "success": true,
+//   "data": [
+//     {
+//       "user_id": "a87cecfd-8439-4836-bd6a-e47fba58d7f0",
+//       "email": "omgdigital.developer.02@gmail.com",
+//       "password_hash": "$2b$10$CBIFukZdpPXEGggh3MIG0ehYlahekg84LGbUyRiiWHx4ZRnwZLN0i",
+//       "create_date": "2025-10-08T08:57:43.788718+00:00",
+//       "info": {
+
+//       },
+//       "permission_user": 4
+//     }
+//   ]
+// }
     if (result.success) {
       userData = result.data;
     }
