@@ -249,7 +249,6 @@ const CampaignsPage = () => {
                 const seqId = seqObj[seqName];
                 const campaigns = allData?.groupedData[seqName] || [];
                 const formattedCampaigns = formatCampaignData(campaigns);
-                console.log("formattedCampaigns:", formattedCampaigns);
 
                 // 🔹 หาสถานะของ sequence
                 let status = "none";
@@ -414,10 +413,6 @@ const CampaignsPage = () => {
                                   (b.modifiedMillisNum || 0) -
                                   (a.modifiedMillisNum || 0)
                               );
-                            console.log(
-                              `[Default Latest] ${seqName} campaigns by modifiedMillis desc:`,
-                              debugList
-                            );
                           } catch (e) {
                             console.warn("Debug log failed:", e);
                           }
