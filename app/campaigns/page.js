@@ -225,12 +225,14 @@ const CampaignsPage = () => {
             >
               {showAllSpots ? "Hide Details" : "Show All Spot"}
             </button>
-            <button
-              onClick={() => setIsOpen(true)}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
-            >
-              Add Campaign
-            </button>
+            {userData?.[0]?.permission_user >= 2 && (
+              <button
+                onClick={() => setIsOpen(true)}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+              >
+                Add Campaign
+              </button>
+            )}
           </div>
         </div>
 
@@ -760,7 +762,6 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
-                              userData={userData}
                             />
                           </div>
                         ))}
@@ -790,7 +791,6 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
-                              userData={userData}
                             />
                           </div>
                         ))}
@@ -820,7 +820,6 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
-                              userData={userData}
                             />
                           </div>
                         ))}
