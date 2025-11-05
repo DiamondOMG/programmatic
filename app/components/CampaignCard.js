@@ -1,15 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import signage_form_3 from "../make_data/signage_form_3";
+import { UserContext } from "../providers";
 
-// Convert array to object for backward compatibility
-const signage_form_2 = signage_form_3.reduce((acc, item) => {
-  acc[item.format] = item;
-  return acc;
-}, {});
 
 // Component Card แยกออกมา
 export default function CampaignCard({ campaign, onEdit, onDelete, selectId, selectSeqId }) {
+  const userData = useContext(UserContext);
   const getStatusColor = (status) => {
     switch (status) {
       case "Running":
@@ -23,18 +19,8 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
     }
   };
 
-  // 🔹 ฟังก์ชัน map condition เป็น label
-  const getLabelFromCondition = (condition) => {
-    for (const [label, cond] of Object.entries(signage_form_2)) {
-      if (cond === condition) {
-        return label;
-      }
-    }
-    return condition; // ถ้าหาไม่เจอ แสดง condition เดิม
-  };
-
   // ✅ เช็คว่าควรแสดงปุ่มหรือไม่
-  const shouldShowButtons = campaign.title !== "Default";
+  const shouldShowButtons = campaign.title !== "Default" && userData?.[0]?.permission_user >= 2;
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-blue-100">

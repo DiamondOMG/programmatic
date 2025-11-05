@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import CampaignManagement from "../components/CampaignManagement";
@@ -8,6 +8,7 @@ import { get_sequence_all_2 } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
 import signage_form_3 from "../make_data/signage_form_3";
+import { UserContext } from "../providers";
 
 // Convert array to object for backward compatibility
 const signage_form_2 = signage_form_3.reduce((acc, item) => {
@@ -16,6 +17,7 @@ const signage_form_2 = signage_form_3.reduce((acc, item) => {
 }, {});
 
 const CampaignsPage = () => {
+  const userData = useContext(UserContext);
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -763,6 +765,7 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
+                              userData={userData}
                             />
                           </div>
                         ))}
@@ -792,6 +795,7 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
+                              userData={userData}
                             />
                           </div>
                         ))}
@@ -821,6 +825,7 @@ const CampaignsPage = () => {
                               onDelete={() => setIsDeleteOpen(true)}
                               selectId={setSelectId}
                               selectSeqId={setSelectSeqId}
+                              userData={userData}
                             />
                           </div>
                         ))}
