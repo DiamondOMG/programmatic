@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import signage_form_2 from "../make_data/signage_form_2";
+import signage_form_3 from "../make_data/signage_form_3";
+
+// Convert array to object for backward compatibility
+const signage_form_2 = signage_form_3.reduce((acc, item) => {
+  acc[item.format] = item;
+  return acc;
+}, {});
 import { updateCampaign } from "../campaign/update_campaign";
 
 // ฟังก์ชันแปลง date เป็น UnixTime UTC

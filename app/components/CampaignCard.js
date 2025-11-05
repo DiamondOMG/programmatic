@@ -1,6 +1,12 @@
 import React from "react";
 import { Pencil, Trash2 } from "lucide-react";
-import signage_form_2 from "../make_data/signage_form_2.js";
+import signage_form_3 from "../make_data/signage_form_3";
+
+// Convert array to object for backward compatibility
+const signage_form_2 = signage_form_3.reduce((acc, item) => {
+  acc[item.format] = item;
+  return acc;
+}, {});
 
 // Component Card แยกออกมา
 export default function CampaignCard({ campaign, onEdit, onDelete, selectId, selectSeqId }) {

@@ -7,7 +7,13 @@ import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all_2 } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
-import signage_form_2 from "../make_data/signage_form_2";
+import signage_form_3 from "../make_data/signage_form_3";
+
+// Convert array to object for backward compatibility
+const signage_form_2 = signage_form_3.reduce((acc, item) => {
+  acc[item.format] = item;
+  return acc;
+}, {});
 
 const CampaignsPage = () => {
   const [isOpen, setIsOpen] = useState(false);

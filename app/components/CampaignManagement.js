@@ -4,7 +4,13 @@ import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
-import signage_form_2 from "../make_data/signage_form_2";
+import signage_form_3 from "../make_data/signage_form_3";
+
+// Convert array to object for backward compatibility
+const signage_form_2 = signage_form_3.reduce((acc, item) => {
+  acc[item.format] = item;
+  return acc;
+}, {});
 import seq_table from "../make_data/seq_table";
 import { sequence_supabase } from "../campaigns/get_sequence";
 import { v4 as uuidv4 } from "uuid";
@@ -191,7 +197,9 @@ export default function CombinedPage() {
     }
 
     if (isDimensionValid === false) {
-      setContentMessage("Cannot upload: file dimensions do not match the selected format.");
+      setContentMessage(
+        "Cannot upload: file dimensions do not match the selected format."
+      );
       setContentMessageType("error");
       return;
     }
@@ -489,7 +497,9 @@ export default function CombinedPage() {
         <button
           type="submit"
           form="uploadForm"
-          disabled={isContentUploading || !contentFile || isDimensionValid === false}
+          disabled={
+            isContentUploading || !contentFile || isDimensionValid === false
+          }
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-md 
              hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 
              focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed 
