@@ -118,7 +118,7 @@ export async function checkStackItem(seq_id, id_programmatic) {
   }
 }
 
-export async function checkMaxCreate(seq_id, max_create) {
+export async function checkMaxCreate(seq_id, max_create, seq_form) {
   try {
     const data = await checkSequence(seq_id);
 
@@ -132,7 +132,12 @@ export async function checkMaxCreate(seq_id, max_create) {
     }
 
     const firstStackItems = data.stacks[0].items || [];
-    return firstStackItems.length > max_create;
+    
+    // Filter items to only include those with matching form_programmatic
+    const filteredItems = firstStackItems.filter(item => 
+      item.data && item.data.form_programmatic === seq_form
+    );
+    return filteredItems.length > max_create;
   } catch (error) {
     return { error: `Error checking max create: ${error.message}` };
   }

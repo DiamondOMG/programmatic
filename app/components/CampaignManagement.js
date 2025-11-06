@@ -214,7 +214,7 @@ export default function CombinedPage() {
       formData.append("file", contentFile);
       formData.append("campaign_name", seq_label);
 
-      const result = await uploadAsset(formData, seq_id);
+      const result = await uploadAsset(formData, seq_id, seq_form);
 
       if (result.success) {
         setContentMessage(result.message);

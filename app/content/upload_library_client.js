@@ -36,7 +36,7 @@ async function uploadFile(file, itemId, pendingId, fileName) {
 }
 
 // Main client-side function
-export async function uploadAsset(formData, seq_id) {
+export async function uploadAsset(formData, seq_id, seq_form) {
   try {
     const label = formData.get("label");
     const file = formData.get("file");
@@ -47,9 +47,9 @@ export async function uploadAsset(formData, seq_id) {
     // Step 0: Check max create
     try {
       console.log("Starting Step 0: checkMaxCreate");
-      const maxCreateExceeded = await checkMaxCreate(seq_id, 5);
+      const maxCreateExceeded = await checkMaxCreate(seq_id, 4, seq_form);
       if (maxCreateExceeded) {
-        return { success: false, error: "This Spot is already full. please delete some campaign." };
+        return { success: false, error: "This Spot is already full in this Format. please delete some campaign." };
       }
       console.log("Step 0 success. Max create limit not exceeded.");
     } catch (e) {
