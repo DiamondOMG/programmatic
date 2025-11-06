@@ -29,54 +29,62 @@ export async function getSequence() {
     }
 
     return data || [];
-//     [
+// [
 //     {
 //         "seq_id": "1314CF47CE209F",
 //         "created_at": "2025-10-10T08:44:21.780149+00:00",
 //         "seq_name": "Spot #2",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "132D4D45714905",
 //         "created_at": "2025-10-10T08:46:52.95341+00:00",
 //         "seq_name": "Spot #6",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "132E3FF1F22F64",
 //         "created_at": "2025-10-10T08:45:29+00:00",
 //         "seq_name": "Spot #4",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "133DA4F113E159",
 //         "created_at": "2025-10-10T08:43:39+00:00",
 //         "seq_name": "Spot #1",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "1357E6072D53EE",
 //         "created_at": "2025-10-10T08:48:29.564014+00:00",
 //         "seq_name": "Spot #8",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "1386EC1F116465",
 //         "created_at": "2025-10-10T08:44:48.820249+00:00",
 //         "seq_name": "Spot #3",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "138733B8D76106",
 //         "created_at": "2025-10-10T08:47:40.106936+00:00",
 //         "seq_name": "Spot #5",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "seq_id": "13DCAB3612C400",
 //         "created_at": "2025-10-10T08:48:14.067099+00:00",
 //         "seq_name": "Spot #7",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     }
 // ]
   } catch (error) {

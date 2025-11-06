@@ -31,13 +31,14 @@ export async function getFormat() {
     return data || [];
 // [
 //     {
-//         "form_id": "eed616e1-b5af-43b2-a87a-eb63899c1adb",
-//         "created_at": "2025-11-04T10:26:30.901773+00:00",
-//         "format": "TV Signage 43",
+//         "form_id": "0181f2e1-62c2-4a99-bf3a-e61a6eae90aa",
+//         "created_at": "2025-11-05T07:35:54.654133+00:00",
+//         "format": "Category Signage",
 //         "width": 1920,
-//         "height": 1080,
-//         "condition": "displayAspectRatio == \"1920x1080\"",
-//         "retailer": "TopsDigital"
+//         "height": 540,
+//         "condition": "displayAspectRatio == \"1920x540\" && AssetTypeId == \"AS0066\"",
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "form_id": "7b8122e3-7c44-487c-ba18-e7d738a8ec06",
@@ -46,7 +47,8 @@ export async function getFormat() {
 //         "width": 1920,
 //         "height": 1080,
 //         "condition": "displayAspectRatio == \"1920x1080\" && AssetTypeId == \"AS0120\"",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "form_id": "823e8b28-ed02-44b9-940f-da362b092323",
@@ -55,25 +57,8 @@ export async function getFormat() {
 //         "width": 1080,
 //         "height": 1920,
 //         "condition": "displayAspectRatio == \"1080x1920\" && AssetTypeId == \"AS0119\"",
-//         "retailer": "TopsDigital"
-//     },
-//     {
-//         "form_id": "f649b6d6-1d60-4ddb-a834-a23db720c8c9",
-//         "created_at": "2025-11-05T07:35:23.35861+00:00",
-//         "format": "Kiosk 55",
-//         "width": 1080,
-//         "height": 1920,
-//         "condition": "displayAspectRatio == \"1080x1920\" && AssetTypeId == \"AS0120\"",
-//         "retailer": "TopsDigital"
-//     },
-//     {
-//         "form_id": "0181f2e1-62c2-4a99-bf3a-e61a6eae90aa",
-//         "created_at": "2025-11-05T07:35:54.654133+00:00",
-//         "format": "Category Signage",
-//         "width": 1920,
-//         "height": 540,
-//         "condition": "displayAspectRatio == \"1920x540\" && AssetTypeId == \"AS0066\"",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     },
 //     {
 //         "form_id": "c902c7f2-d851-4ba0-9b49-b87c20747ec0",
@@ -82,7 +67,28 @@ export async function getFormat() {
 //         "width": 1080,
 //         "height": 1920,
 //         "condition": "displayAspectRatio == \"1080x1920\" && AssetTypeId == \"AS0066\"",
-//         "retailer": "TopsDigital"
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
+//     },
+//     {
+//         "form_id": "eed616e1-b5af-43b2-a87a-eb63899c1adb",
+//         "created_at": "2025-11-04T10:26:30.901773+00:00",
+//         "format": "TV Signage 43",
+//         "width": 1920,
+//         "height": 1080,
+//         "condition": "displayAspectRatio == \"1920x1080\"",
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
+//     },
+//     {
+//         "form_id": "f649b6d6-1d60-4ddb-a834-a23db720c8c9",
+//         "created_at": "2025-11-05T07:35:23.35861+00:00",
+//         "format": "Kiosk 55",
+//         "width": 1080,
+//         "height": 1920,
+//         "condition": "displayAspectRatio == \"1080x1920\" && AssetTypeId == \"AS0120\"",
+//         "retailer": "TopsDigital",
+//         "type": "Food Hall"
 //     }
 // ]
   } catch (error) {

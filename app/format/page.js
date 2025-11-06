@@ -18,7 +18,7 @@ export default function FormatPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentFormat, setCurrentFormat] = useState(null);
   const [formatToDelete, setFormatToDelete] = useState(null);
-  
+
   // Use the useFormat hook
   const {
     formats = [],
@@ -30,7 +30,7 @@ export default function FormatPage() {
     isCreating,
     isUpdating,
     isDeleting,
-    refetch: refetchFormats
+    refetch: refetchFormats,
   } = useFormat();
 
   // Local error state for form validation
@@ -38,6 +38,7 @@ export default function FormatPage() {
 
   // Retailer options
   const retailerOptions = ["TopsDigital", "Big C", "Dear Tummy"];
+  const typeOptions = ["Food Hall", "Dairy", "Market"];
 
   // Form state
   const [formData, setFormData] = useState({
@@ -45,7 +46,8 @@ export default function FormatPage() {
     width: "",
     height: "",
     condition: "",
-    retailer: "TopsDigital", // Default value
+    retailer: "TopsDigital",
+    type: "Food Hall",
   });
 
   const formatDate = (dateString) => {
@@ -70,7 +72,8 @@ export default function FormatPage() {
       (fmt) =>
         fmt.format.toLowerCase().includes(searchTerm.toLowerCase()) ||
         fmt.retailer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fmt.condition.toLowerCase().includes(searchTerm.toLowerCase())
+        fmt.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (fmt.type || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [formats, searchTerm]);
 
@@ -105,6 +108,7 @@ export default function FormatPage() {
       height: "",
       condition: "",
       retailer: "TopsDigital",
+      type: "Food Hall",
     });
     setIsModalOpen(true);
   };
@@ -118,6 +122,7 @@ export default function FormatPage() {
       height: format.height,
       condition: format.condition,
       retailer: format.retailer || "TopsDigital",
+      type: format.type || "Food Hall",
     });
     setIsModalOpen(true);
   };
@@ -134,13 +139,14 @@ export default function FormatPage() {
         height: parseInt(formData.height),
         condition: formData.condition,
         retailer: formData.retailer,
+        type: formData.type,
       };
 
       if (currentFormat) {
         // Update existing format
         await updateFormat({
           form_id: currentFormat.form_id,
-          ...formatData
+          ...formatData,
         });
       } else {
         // Create new format
@@ -162,7 +168,7 @@ export default function FormatPage() {
   // Handle delete format
   const handleDelete = async () => {
     if (!formatToDelete) return;
-    
+
     setError(null);
 
     try {
@@ -289,6 +295,13 @@ export default function FormatPage() {
                     >
                       Retailer
                     </th>
+
+                    <th
+                      scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                    >
+                      Type
+                    </th>
                     <th
                       scope="col"
                       className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
@@ -318,6 +331,9 @@ export default function FormatPage() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           {fmt.retailer}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {fmt.type}
                         </td>
                         <td className="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
                           {fmt.condition}
@@ -550,6 +566,27 @@ export default function FormatPage() {
                   {retailerOptions.map((retailer) => (
                     <option key={retailer} value={retailer}>
                       {retailer}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Type
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  {typeOptions.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
                     </option>
                   ))}
                 </select>

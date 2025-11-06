@@ -33,12 +33,14 @@ export default function SequencePage() {
 
   // Retailer options
   const retailerOptions = ["TopsDigital", "Big C", "Dear Tummy"];
+  const typeOptions = ["Food Hall", "Dairy", "Market"];
 
   // Form state
   const [formData, setFormData] = useState({
     seq_id: "",
     seq_name: "",
     retailer: "TopsDigital", // Default value
+    type: "Food Hall",
   });
 
   const formatDate = (dateString) => {
@@ -63,7 +65,8 @@ export default function SequencePage() {
       (seq) =>
         seq.seq_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         seq.seq_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        seq.retailer.toLowerCase().includes(searchTerm.toLowerCase())
+        seq.retailer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (seq.type || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sequences, searchTerm]);
 
@@ -96,6 +99,7 @@ export default function SequencePage() {
       seq_id: "",
       seq_name: "",
       retailer: "TopsDigital",
+      type: "Food Hall",
     });
     setIsModalOpen(true);
   };
@@ -107,6 +111,7 @@ export default function SequencePage() {
       seq_id: sequence.seq_id,
       seq_name: sequence.seq_name,
       retailer: sequence.retailer || "TopsDigital",
+      type: sequence.type || "Food Hall",
     });
     setIsModalOpen(true);
   };
@@ -119,6 +124,7 @@ export default function SequencePage() {
       const sequenceData = {
         seq_name: formData.seq_name,
         retailer: formData.retailer,
+        type: formData.type,
       };
 
       if (currentSequence) {
@@ -275,6 +281,12 @@ export default function SequencePage() {
                     </th>
                     <th
                       scope="col"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/6"
+                    >
+                      Type
+                    </th>
+                    <th
+                      scope="col"
                       className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/5"
                     >
                       Created At
@@ -299,6 +311,9 @@ export default function SequencePage() {
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           {seq.retailer}
+                        </td>
+                        <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                          {seq.type}
                         </td>
                         <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                           {formatDate(seq.created_at)}
@@ -509,6 +524,27 @@ export default function SequencePage() {
                   ))}
                 </select>
               </div>
+              <div className="mb-6">
+                <label
+                  htmlFor="type"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Type
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                >
+                  {typeOptions.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
@@ -606,6 +642,12 @@ export default function SequencePage() {
                       Retailer:{" "}
                       <span className="text-gray-700">
                         {sequenceToDelete.retailer}
+                      </span>
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Type:{" "}
+                      <span className="text-gray-700">
+                        {sequenceToDelete.type}
                       </span>
                     </p>
                   </div>
