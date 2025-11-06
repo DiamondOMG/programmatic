@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  getSequence,
-  createSequence,
-  updateSequence,
-  deleteSequence,
-} from "@/app/lib/sequence";
+import { useState, useMemo } from "react";
+import { useSequence } from "@/hook/useSequence";
 import {
   PencilIcon,
   TrashIcon,
@@ -17,17 +12,24 @@ import {
 const ITEMS_PER_PAGE = 10;
 
 export default function SequencePage() {
-  const [sequences, setSequences] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    sequences,
+    isLoading,
+    error,
+    createSequence,
+    updateSequence,
+    deleteSequence,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useSequence();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentSequence, setCurrentSequence] = useState(null);
   const [sequenceToDelete, setSequenceToDelete] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Retailer options
   const retailerOptions = ["TopsDigital", "Big C", "Dear Tummy"];
@@ -38,22 +40,6 @@ export default function SequencePage() {
     seq_name: "",
     retailer: "TopsDigital", // Default value
   });
-
-  useEffect(() => {
-    const fetchSequences = async () => {
-      try {
-        const data = await getSequence();
-        setSequences(data);
-      } catch (err) {
-        console.error("Error loading sequences:", err);
-        setError("Failed to load sequences");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSequences();
-  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -128,8 +114,6 @@ export default function SequencePage() {
   // Handle form submission (create/update)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
 
     try {
       const sequenceData = {
@@ -139,29 +123,20 @@ export default function SequencePage() {
 
       if (currentSequence) {
         // Update existing sequence
-        const updatedSequence = await updateSequence(
-          currentSequence.seq_id,
-          sequenceData
-        );
-        setSequences((prev) =>
-          prev.map((seq) =>
-            seq.seq_id === currentSequence.seq_id ? updatedSequence : seq
-          )
-        );
+        await updateSequence({
+          seq_id: currentSequence.seq_id,
+          ...sequenceData,
+        });
       } else {
         // Create new sequence with custom ID
-        const newSequence = await createSequence({
+        await createSequence({
           ...sequenceData,
           seq_id: formData.seq_id,
         });
-        setSequences((prev) => [newSequence, ...prev]);
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving sequence:", error);
-      setError(error.message || "Failed to save sequence. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -175,21 +150,12 @@ export default function SequencePage() {
   const handleDelete = async () => {
     if (!sequenceToDelete) return;
 
-    setIsDeleting(true);
-    setError(null);
-
     try {
       await deleteSequence(sequenceToDelete.seq_id);
-      setSequences((prev) =>
-        prev.filter((seq) => seq.seq_id !== sequenceToDelete.seq_id)
-      );
       setIsDeleteModalOpen(false);
       setSequenceToDelete(null);
     } catch (error) {
       console.error("Error deleting sequence:", error);
-      setError("Failed to delete sequence");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -232,7 +198,7 @@ export default function SequencePage() {
             </svg>
           </div>
           <div className="ml-3">
-            <p className="text-sm text-red-700">{error}</p>
+            <p className="text-sm text-red-700">{error.message || error}</p>
           </div>
         </div>
       </div>
@@ -484,11 +450,6 @@ export default function SequencePage() {
               </h3>
             </div>
             <form onSubmit={handleSubmit} className="p-6">
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded">
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
               <div className="mb-4">
                 <label
                   htmlFor="seq_id"
@@ -553,16 +514,16 @@ export default function SequencePage() {
                   type="button"
                   onClick={closeModal}
                   className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                  disabled={isSubmitting}
+                  disabled={isCreating || isUpdating}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSubmitting}
+                  disabled={isCreating || isUpdating}
                 >
-                  {isSubmitting ? (
+                  {isCreating || isUpdating ? (
                     <span className="flex items-center">
                       <svg
                         className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"

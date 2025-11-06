@@ -68,7 +68,7 @@ const CampaignsPage = () => {
       if (response.success) {
         setMessage({ type: "success", text: response.message });
         // Invalidate queries to refetch the latest data
-        await queryClient.invalidateQueries(["sequences"]);
+        await queryClient.invalidateQueries(["sequences_for_alldata"]);
       } else {
         setMessage({ type: "error", text: response.error });
       }
@@ -146,7 +146,7 @@ const CampaignsPage = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["sequences"],
+    queryKey: ["sequences_for_alldata"],
     queryFn: async () => {
       const result = await get_sequence_all_2();
       if (!result.success) throw new Error(result.message);
@@ -1032,7 +1032,7 @@ const CampaignsPage = () => {
                 <EditCampaignManagement
                   campaign={editingCampaign}
                   onSuccess={() => {
-                    queryClient.invalidateQueries(["sequences"]);
+                    queryClient.invalidateQueries(["sequences_for_alldata"]);
                     closeEditModal();
                   }}
                 />
