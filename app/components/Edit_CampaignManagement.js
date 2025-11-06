@@ -1,13 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
-import signage_form_3 from "../make_data/signage_form_3";
-
-// Convert array to object for backward compatibility
-const signage_form_2 = signage_form_3.reduce((acc, item) => {
-  acc[item.format] = item;
-  return acc;
-}, {});
+import { useState, useTransition } from "react";
 import { updateCampaign } from "../campaign/update_campaign";
 
 // ฟังก์ชันแปลง date เป็น UnixTime UTC
@@ -37,39 +30,18 @@ function formatDateForInput(unixTime) {
 }
 
 export default function EditCampaignManagement({ campaign, onSuccess }) {
-  console.log("campaign", campaign);
-  const [seq_label, setSeqLabel] = useState("");
-  const [seq_form, setSeqForm] = useState("");
-  const [seq_condition, setSeqCondition] = useState("");
-  const [seq_name, setSeqName] = useState("");
-  const [seq_id, setSeqId] = useState("");
-  const [seq_startdate, setSeqStartDate] = useState("");
-  const [seq_enddate, setSeqEndDate] = useState("");
-  const [image, setImage] = useState("");
+  const [seq_label, setSeqLabel] = useState(campaign.title);
+  const [seq_form, setSeqForm] = useState(campaign.seq_form);
+  const [seq_condition, setSeqCondition] = useState(campaign.description);
+  const [seq_name, setSeqName] = useState(campaign.seq_name);
+  const [seq_id, setSeqId] = useState(campaign.seq_id);
+  const [seq_startdate, setSeqStartDate] = useState(formatDateForInput(campaign.startMillis));
+  const [seq_enddate, setSeqEndDate] = useState(formatDateForInput(campaign.endMillis));
+  const [image, setImage] = useState(campaign.image);
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // โหลดค่าเริ่มต้นจาก props
-  useEffect(() => {
-    if (campaign) {
-      setSeqLabel(campaign.title || "");
-      setImage(campaign.image || "");
-      setSeqName(campaign.seq_name || "");
-      setSeqId(campaign.seq_id || "");
 
-      // หา condition ที่ match signage_form_2
-      const matchedConditionKey = Object.keys(signage_form_2).find(
-        (key) => signage_form_2[key].condition === campaign.description
-      );
-      if (matchedConditionKey) {
-        setSeqForm(matchedConditionKey);
-        setSeqCondition(signage_form_2[matchedConditionKey].condition);
-      }
-
-      setSeqStartDate(formatDateForInput(campaign.startMillis));
-      setSeqEndDate(formatDateForInput(campaign.endMillis));
-    }
-  }, [campaign]);
 
   // ✅ ฟังก์ชันส่งข้อมูลไป update_campaign.js
   const handleSubmit = async (e) => {
@@ -79,13 +51,13 @@ export default function EditCampaignManagement({ campaign, onSuccess }) {
     const formData = new FormData();
     formData.append("libraryId", campaign.id);
     formData.append("seq_label", seq_label);
-    formData.append("seq_form", seq_form);
-    formData.append("seq_condition", seq_condition);
     formData.append("seq_id", seq_id);
     formData.append("programmaticId", campaign.id);
     formData.append("seq_startdate", convertToUnixTime(seq_startdate, false));
     formData.append("seq_enddate", convertToUnixTime(seq_enddate, true));
     formData.append("libraryItemId", campaign.libraryItemId);
+    formData.append("seq_form", seq_form);
+    formData.append("seq_condition", seq_condition);
 
     startTransition(async () => {
       try {

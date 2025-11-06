@@ -7,14 +7,9 @@ import CampaignCard from "../components/CampaignCard";
 import { get_sequence_all_2 } from "./get_sequence";
 import { delItem } from "./del_item";
 import EditCampaignManagement from "../components/Edit_CampaignManagement";
-import signage_form_3 from "../make_data/signage_form_3";
 import { UserContext } from "../providers";
-
-// Convert array to object for backward compatibility
-const signage_form_2 = signage_form_3.reduce((acc, item) => {
-  acc[item.format] = item;
-  return acc;
-}, {});
+import { useFormat } from "@/hook/useFormat";
+import { useSequence } from "@/hook/useSequence";
 
 const CampaignsPage = () => {
   const userData = useContext(UserContext);
@@ -33,7 +28,13 @@ const CampaignsPage = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState(null);
   const [showAllSpots, setShowAllSpots] = useState(false); // Toggle state for showing all spots
-
+  // Use format hook
+  const { formats } = useFormat();
+  const { sequences } = useSequence();//! ใช้เพื่อเรียกแคชข้อมูล sequence
+  const signage_form_2 = formats.reduce((acc, item) => {
+    acc[item.format] = item;
+    return acc;
+  }, {});
   const closeModal = () => setIsOpen(false);
   const closeDeleteModal = () => {
     setIsDeleteOpen(false);
