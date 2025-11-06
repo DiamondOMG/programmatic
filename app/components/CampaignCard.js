@@ -78,6 +78,13 @@ export default function CampaignCard({ campaign, onEdit, onDelete, selectId, sel
             >
               {campaign.status}
             </span>
+            {campaign.active == "Playing" && (
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-purple-100 text-purple-700`}
+              >
+                On Air
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-3 gap-4 mt-3">

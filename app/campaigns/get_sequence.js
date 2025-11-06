@@ -231,6 +231,7 @@ function calculateStatusForItems(items, seqName, seqId) {
     const startMillis = toMillis(item.startMillis);
     const endMillis = toMillis(item.endMillis, Infinity);
     let status = "Unknown";
+    let active = null
 
     if (startMillis === null) {
       if (endMillis === Infinity) status = "Schedule";
@@ -238,11 +239,12 @@ function calculateStatusForItems(items, seqName, seqId) {
       else status = "Schedule";
     } else {
       if (startMillis < now && now < endMillis) {
+        status = "Running";
         // เช็คว่าเป็น running item แรกของ form นี้หรือไม่
         const form = item.form_programmatic || "Global";
         const isFirstRunningInForm =
           runningItemsByForm[form]?.[0]?.libraryItemId === item.libraryItemId;
-        status = isFirstRunningInForm ? "Running" : "Schedule";
+        active = isFirstRunningInForm ? "Playing" : null;
       } else if (now < startMillis && startMillis < endMillis) {
         status = "Schedule";
       } else if (startMillis < endMillis && endMillis < now) {
@@ -250,7 +252,7 @@ function calculateStatusForItems(items, seqName, seqId) {
       }
     }
 
-    return { ...item, seq_name: seqName, seq_id: seqId, status };
+    return { ...item, seq_name: seqName, seq_id: seqId, status, active };
   });
 }
 

@@ -137,6 +137,7 @@ const CampaignsPage = () => {
         libraryItemId: item.libraryItemId,
         type_programmatic: item.type_programmatic,
         seq_form: item.form_programmatic || "Global",
+        active: item.active || null,
       };
     });
   };
