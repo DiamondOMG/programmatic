@@ -1,12 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  getFormat,
-  createFormat,
-  updateFormat,
-  deleteFormat,
-} from "@/app/lib/format";
+import { useState, useMemo } from "react";
+import useFormat from "@/hook/useFormat";
 import {
   PencilIcon,
   TrashIcon,
@@ -17,17 +12,29 @@ import {
 const ITEMS_PER_PAGE = 10;
 
 export default function FormatPage() {
-  const [formats, setFormats] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentFormat, setCurrentFormat] = useState(null);
   const [formatToDelete, setFormatToDelete] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Use the useFormat hook
+  const {
+    formats = [],
+    isLoading,
+    error: formatError,
+    createFormat,
+    updateFormat,
+    deleteFormat,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    refetch: refetchFormats
+  } = useFormat();
+
+  // Local error state for form validation
+  const [error, setError] = useState(null);
 
   // Retailer options
   const retailerOptions = ["TopsDigital", "Big C", "Dear Tummy"];
@@ -40,22 +47,6 @@ export default function FormatPage() {
     condition: "",
     retailer: "TopsDigital", // Default value
   });
-
-  useEffect(() => {
-    const fetchFormats = async () => {
-      try {
-        const data = await getFormat();
-        setFormats(data);
-      } catch (err) {
-        console.error("Error loading formats:", err);
-        setError("Failed to load formats");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchFormats();
-  }, []);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -134,7 +125,6 @@ export default function FormatPage() {
   // Handle form submission (create/update)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     setError(null);
 
     try {
@@ -148,26 +138,18 @@ export default function FormatPage() {
 
       if (currentFormat) {
         // Update existing format
-        const updatedFormat = await updateFormat(
-          currentFormat.form_id,
-          formatData
-        );
-        setFormats((prev) =>
-          prev.map((fmt) =>
-            fmt.form_id === currentFormat.form_id ? updatedFormat : fmt
-          )
-        );
+        await updateFormat({
+          form_id: currentFormat.form_id,
+          ...formatData
+        });
       } else {
         // Create new format
-        const newFormat = await createFormat(formatData);
-        setFormats((prev) => [newFormat, ...prev]);
+        await createFormat(formatData);
       }
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error saving format:", error);
       setError(error.message || "Failed to save format. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -180,22 +162,16 @@ export default function FormatPage() {
   // Handle delete format
   const handleDelete = async () => {
     if (!formatToDelete) return;
-
-    setIsDeleting(true);
+    
     setError(null);
 
     try {
       await deleteFormat(formatToDelete.form_id);
-      setFormats((prev) =>
-        prev.filter((fmt) => fmt.form_id !== formatToDelete.form_id)
-      );
       setIsDeleteModalOpen(false);
       setFormatToDelete(null);
     } catch (error) {
       console.error("Error deleting format:", error);
       setError("Failed to delete format");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -596,49 +572,26 @@ export default function FormatPage() {
                   placeholder='e.g., displayAspectRatio == "1920x1080"'
                 />
               </div>
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3 mt-6">
                 <button
                   type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                  disabled={isSubmitting}
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSubmitting}
+                  disabled={isCreating || isUpdating}
+                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
                 >
-                  {isSubmitting ? (
-                    <span className="flex items-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      {currentFormat ? "Updating..." : "Creating..."}
-                    </span>
-                  ) : currentFormat ? (
-                    "Update Format"
-                  ) : (
-                    "Create Format"
-                  )}
+                  {isUpdating
+                    ? "Updating..."
+                    : isCreating
+                    ? "Creating..."
+                    : currentFormat
+                    ? "Update Format"
+                    : "Create Format"}
                 </button>
               </div>
             </form>
