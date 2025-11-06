@@ -4,15 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { uploadAsset } from "../content/upload_library_client";
 import { updateSequence } from "../campaign/update_sequence";
-import signage_form_3 from "../make_data/signage_form_3";
-
-// Convert array to object for backward compatibility
-const signage_form_2 = signage_form_3.reduce((acc, item) => {
-  acc[item.format] = item;
-  return acc;
-}, {});
-import seq_table from "../make_data/seq_table";
-import { sequence_supabase } from "../campaigns/get_sequence";
+import { useFormat } from "@/hook/useFormat";
+import { useSequence } from "@/hook/useSequence";
 import { v4 as uuidv4 } from "uuid";
 
 // Constants
@@ -45,6 +38,17 @@ function convertToUnixTime(dateString, isEndDate = false) {
 export default function CombinedPage() {
   const queryClient = useQueryClient();
 
+  // Use format hook
+  const { formats, isLoading: isLoadingFormats } = useFormat();
+  // Use sequence hook (replaces sequence_supabase)
+  const { sequences, isLoading: isLoadingSequences } = useSequence();
+
+  // Convert formats array to object for backward compatibility
+  const signage_form_2 = formats.reduce((acc, item) => {
+    acc[item.format] = item;
+    return acc;
+  }, {});
+
   // Content Upload States
   const [contentFile, setContentFile] = useState(null);
   const [isContentDragOver, setIsContentDragOver] = useState(false);
@@ -63,7 +67,7 @@ export default function CombinedPage() {
   const [seq_enddate, setseq_enddate] = useState("");
   const [seq_duration, setseq_duration] = useState(DEFAULT_SEQ_DURATION);
   const [seq_label, setseq_label] = useState("");
-  const [seq_table_data, setSeqTableData] = useState([]);
+  // no local seq_table_data; use cached `sequences` from useSequence hook directly
   const [fileDimensions, setFileDimensions] = useState(null);
   const [isDimensionValid, setIsDimensionValid] = useState(null);
 
@@ -102,12 +106,9 @@ export default function CombinedPage() {
   useEffect(() => {
     const today = new Date();
     setseq_startdate(formatDateForInput(today));
-    const fetchSequenceData = async () => {
-      const result = await sequence_supabase();
-      setSeqTableData(result);
-    };
-    fetchSequenceData();
   }, []);
+
+  // Note: we use `sequences` from the hook directly; no local sync needed
 
   const getFileDimensions = (file) => {
     return new Promise((resolve, reject) => {
@@ -287,6 +288,8 @@ export default function CombinedPage() {
     }
   };
 
+  // Show loading state while formats are being fetched
+
   return (
     <div className="h-full w-full bg-white flex flex-col pt-2">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-2">
@@ -333,13 +336,17 @@ export default function CombinedPage() {
                   }
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={false}
+                disabled={isLoadingFormats || formats.length === 0}
               >
-                {Object.keys(signage_form_2).map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
+                {formats.length === 0 ? (
+                  <option value="">No formats available</option>
+                ) : (
+                  Object.keys(signage_form_2).map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
             <div>
@@ -347,7 +354,7 @@ export default function CombinedPage() {
                 Spot *
               </label>
               <div className="flex flex-wrap gap-4">
-                {seq_table_data
+                {[...(sequences || [])]
                   .sort((a, b) => a.seq_name.localeCompare(b.seq_name))
                   .map((item) => (
                     <label
